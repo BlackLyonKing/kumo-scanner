@@ -52,6 +52,26 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				'signal-long': {
+					DEFAULT: 'hsl(var(--signal-long))',
+					foreground: 'hsl(var(--signal-long-foreground))'
+				},
+				'signal-short': {
+					DEFAULT: 'hsl(var(--signal-short))',
+					foreground: 'hsl(var(--signal-short-foreground))'
+				},
+				'signal-neutral': {
+					DEFAULT: 'hsl(var(--signal-neutral))',
+					foreground: 'hsl(var(--signal-neutral-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
