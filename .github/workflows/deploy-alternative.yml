@@ -1,0 +1,144 @@
+name: Deploy to Apillon (Alternative Method)
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to Apillon via API
+      env:
+        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+        APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+        APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+      run: |
+        # Create deployment script
+        cat > deploy.js << 'EOF'
+        const fs = require('fs');
+        const path = require('path');
+        const https = require('https');
+        const FormData = require('form-data');
+
+        const APILLON_API_BASE = 'https://api.apillon.io';
+        const API_KEY = process.env.APILLON_API_KEY;
+        const PROJECT_UUID = process.env.APILLON_PROJECT_UUID;
+        const WEBSITE_UUID = process.env.APILLON_WEBSITE_UUID;
+
+        async function deployToApillon() {
+          try {
+            console.log('🚀 Starting deployment to Apillon Web3 Hosting...');
+            
+            // Step 1: Request upload URLs
+            const uploadResponse = await fetch(`${APILLON_API_BASE}/hosting/${WEBSITE_UUID}/upload`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Basic ${Buffer.from(API_KEY + ':').toString('base64')}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                files: await getFilesToUpload('./dist')
+              })
+            });
+            
+            const uploadData = await uploadResponse.json();
+            console.log('📁 Upload URLs received');
+            
+            // Step 2: Upload files
+            await uploadFiles(uploadData.data.files);
+            console.log('📤 Files uploaded successfully');
+            
+            // Step 3: Trigger deployment
+            const deployResponse = await fetch(`${APILLON_API_BASE}/hosting/${WEBSITE_UUID}/deploy`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Basic ${Buffer.from(API_KEY + ':').toString('base64')}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                environment: 2, // Production
+                directDeploy: true
+              })
+            });
+            
+            const deployData = await deployResponse.json();
+            console.log('🌐 Deployment triggered successfully');
+            console.log('✅ Your decentralized site is being deployed to IPFS!');
+            
+          } catch (error) {
+            console.error('❌ Deployment failed:', error);
+            process.exit(1);
+          }
+        }
+
+        async function getFilesToUpload(dir) {
+          const files = [];
+          const entries = fs.readdirSync(dir, { withFileTypes: true });
+          
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+              files.push(...await getFilesToUpload(fullPath));
+            } else {
+              files.push({
+                fileName: path.relative('./dist', fullPath).replace(/\\/g, '/'),
+                contentType: getContentType(entry.name)
+              });
+            }
+          }
+          return files;
+        }
+
+        function getContentType(filename) {
+          const ext = path.extname(filename).toLowerCase();
+          const types = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml'
+          };
+          return types[ext] || 'application/octet-stream';
+        }
+
+        async function uploadFiles(files) {
+          for (const file of files) {
+            const filePath = path.join('./dist', file.fileName);
+            const fileContent = fs.readFileSync(filePath);
+            
+            await fetch(file.url, {
+              method: 'PUT',
+              body: fileContent,
+              headers: {
+                'Content-Type': file.contentType || 'application/octet-stream'
+              }
+            });
+          }
+        }
+
+        deployToApillon();
+        EOF
+        
+        # Run the deployment
+        node deploy.js

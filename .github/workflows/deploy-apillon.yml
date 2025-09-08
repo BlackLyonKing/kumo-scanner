@@ -1,0 +1,67 @@
+name: Deploy to Apillon Web3 Hosting
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to Apillon Web3 Hosting
+      env:
+        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+        APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+        APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+      run: |
+        # Install Apillon CLI
+        npm install -g @apillon/cli
+        
+        # Configure Apillon CLI
+        echo "Configuring Apillon CLI..."
+        apillon config set --key "$APILLON_API_KEY" --secret "$APILLON_API_SECRET"
+        
+        # Deploy to staging first
+        echo "Deploying to staging..."
+        apillon hosting deploy \
+          --project-uuid "$APILLON_PROJECT_UUID" \
+          --website-uuid "$APILLON_WEBSITE_UUID" \
+          --path "./dist" \
+          --environment 1
+        
+        # Deploy to production (only on main/master branch)
+        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+          echo "Deploying to production..."
+          apillon hosting deploy \
+            --project-uuid "$APILLON_PROJECT_UUID" \
+            --website-uuid "$APILLON_WEBSITE_UUID" \
+            --path "./dist" \
+            --environment 2
+        fi
+        
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [[ "${{ job.status }}" == "success" ]]; then
+          echo "✅ Deployment successful! Your decentralized site is live on IPFS."
+        else
+          echo "❌ Deployment failed. Check the logs above for details."
+        fi
