@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { RotateCcw, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface AutoRefreshToggleProps {
   onAutoScan: () => void;
@@ -44,21 +45,30 @@ const AutoRefreshToggle = ({ onAutoScan, isScanning }: AutoRefreshToggleProps) =
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <RotateCcw className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Auto-refresh:</span>
-        <Select value={interval} onValueChange={setInterval} disabled={isAutoRefresh}>
-          <SelectTrigger className="w-[100px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="60">1 min</SelectItem>
-            <SelectItem value="300">5 min</SelectItem>
-            <SelectItem value="600">10 min</SelectItem>
-            <SelectItem value="1800">30 min</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="flex items-center gap-4">
+      <div className="glass-card px-3 py-2 rounded-xl">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-primary/20 rounded-lg">
+            <RotateCcw className={cn(
+              "h-4 w-4 text-primary transition-transform duration-300",
+              isAutoRefresh && "animate-spin"
+            )} />
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground font-medium">Auto-refresh:</span>
+            <Select value={interval} onValueChange={setInterval} disabled={isAutoRefresh}>
+              <SelectTrigger className="w-[90px] h-8 text-xs border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="glass-card">
+                <SelectItem value="60">1 min</SelectItem>
+                <SelectItem value="300">5 min</SelectItem>
+                <SelectItem value="600">10 min</SelectItem>
+                <SelectItem value="1800">30 min</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <Button
@@ -66,17 +76,22 @@ const AutoRefreshToggle = ({ onAutoScan, isScanning }: AutoRefreshToggleProps) =
         size="sm"
         onClick={toggleAutoRefresh}
         disabled={isScanning}
-        className={isAutoRefresh ? "animate-pulse-glow" : ""}
+        className={cn(
+          "glass-card border-primary/30 hover:bg-primary/10 transition-all duration-300",
+          isAutoRefresh && "bg-primary/20 border-primary/50 animate-pulse-glow"
+        )}
       >
         {isAutoRefresh ? (
           <>
             <Pause className="mr-2 h-4 w-4" />
-            {countdown > 0 ? formatTime(countdown) : "Scanning..."}
+            <span className="font-mono text-xs">
+              {countdown > 0 ? formatTime(countdown) : "Active"}
+            </span>
           </>
         ) : (
           <>
             <Play className="mr-2 h-4 w-4" />
-            Start
+            Start Auto
           </>
         )}
       </Button>

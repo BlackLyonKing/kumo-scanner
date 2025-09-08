@@ -10,13 +10,19 @@ interface ScanControlsProps {
 
 const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) => {
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-center mb-6 gap-4 animate-fade-in">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Clock className="h-4 w-4" />
-        <span>Last updated:</span>
-        <span className="font-mono text-foreground">
-          {lastUpdated || '...'}
-        </span>
+    <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-6 animate-fade-in">
+      <div className="glass-card px-4 py-3 rounded-xl">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <Clock className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <span className="text-sm font-medium">Last Market Scan:</span>
+            <div className="font-mono text-foreground font-semibold">
+              {lastUpdated || 'Not scanned yet'}
+            </div>
+          </div>
+        </div>
       </div>
       
       <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -25,16 +31,16 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
         <Button 
           onClick={onScan}
           disabled={isScanning}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 disabled:transform-none"
+          className="premium-button text-white font-bold py-3 px-8 rounded-xl text-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100 disabled:opacity-60"
         >
           {isScanning ? (
             <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Scanning...
+              <RefreshCw className="mr-3 h-5 w-5 animate-spin" />
+              Scanning Markets...
             </>
           ) : (
             <>
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <RefreshCw className="mr-3 h-5 w-5" />
               Scan Markets
             </>
           )}

@@ -4,54 +4,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ichimoku Trading Scanner Design System */
+/* Ichimoku Trading Scanner - Premium Design System */
 
 @layer base {
   :root {
-    /* Dark Trading Theme */
-    --background: 218 25% 11%;
+    /* Premium Dark Trading Theme */
+    --background: 220 26% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 218 20% 18%;
+    --card: 220 20% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 218 20% 18%;
+    --popover: 220 20% 12%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 60%;
-    --primary-foreground: 218 25% 11%;
+    --primary-foreground: 220 26% 6%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 217 19% 27%;
+    --secondary: 217 19% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 19% 27%;
+    --muted: 217 19% 18%;
     --muted-foreground: 217 10% 64%;
 
-    --accent: 217 19% 27%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 280 100% 70%;
+    --accent-foreground: 220 26% 6%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 19% 27%;
-    --input: 217 19% 27%;
+    --border: 217 19% 18%;
+    --input: 217 19% 18%;
     --ring: 217 91% 60%;
 
-    /* Trading Signal Colors */
-    --signal-long: 142 76% 36%;
+    /* Enhanced Trading Signal Colors */
+    --signal-long: 142 76% 45%;
     --signal-long-foreground: 210 40% 98%;
-    --signal-short: 0 84% 60%;
+    --signal-long-glow: 142 76% 55%;
+    --signal-short: 0 84% 65%;
     --signal-short-foreground: 210 40% 98%;
+    --signal-short-glow: 0 84% 75%;
     --signal-neutral: 217 10% 64%;
     --signal-neutral-foreground: 210 40% 98%;
 
-    /* Warning Colors */
-    --warning: 48 96% 53%;
-    --warning-foreground: 218 25% 11%;
+    /* Enhanced Status Colors */
+    --warning: 45 93% 58%;
+    --warning-foreground: 220 26% 6%;
 
-    /* Success Colors */
-    --success: 142 76% 36%;
+    --success: 142 76% 45%;
     --success-foreground: 210 40% 98%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-card: linear-gradient(145deg, hsl(220 20% 12%), hsl(220 20% 14%));
+    --gradient-signal-long: linear-gradient(135deg, hsl(142 76% 45%), hsl(142 76% 55%));
+    --gradient-signal-short: linear-gradient(135deg, hsl(0 84% 65%), hsl(0 84% 75%));
+    --gradient-accent: linear-gradient(135deg, hsl(280 100% 70%), hsl(240 100% 75%));
+
+    /* Shadows & Effects */
+    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.3);
+    --shadow-card: 0 8px 32px hsl(220 26% 6% / 0.6);
+    --shadow-signal-long: 0 0 20px hsl(142 76% 45% / 0.4);
+    --shadow-signal-short: 0 0 20px hsl(0 84% 65% / 0.4);
 
     --radius: 0.75rem;
 
@@ -119,5 +134,58 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at 20% 50%, hsl(217 91% 60% / 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, hsl(280 100% 70% / 0.05) 0%, transparent 50%),
+                hsl(var(--background));
+  }
+}
+
+/* Enhanced Components */
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-sm bg-card/80 border border-border/50;
+    box-shadow: var(--shadow-card);
+  }
+
+  .signal-badge-long {
+    @apply px-3 py-1 rounded-full text-xs font-semibold;
+    background: var(--gradient-signal-long);
+    color: hsl(var(--signal-long-foreground));
+    box-shadow: var(--shadow-signal-long);
+  }
+
+  .signal-badge-short {
+    @apply px-3 py-1 rounded-full text-xs font-semibold;
+    background: var(--gradient-signal-short);
+    color: hsl(var(--signal-short-foreground));
+    box-shadow: var(--shadow-signal-short);
+  }
+
+  .signal-badge-neutral {
+    @apply px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground;
+  }
+
+  .premium-button {
+    @apply relative overflow-hidden;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .premium-button::before {
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    content: '';
+    background: linear-gradient(135deg, transparent, hsl(var(--primary-glow) / 0.3), transparent);
+  }
+
+  .premium-button:hover::before {
+    @apply opacity-100;
+  }
+
+  .data-row {
+    @apply transition-all duration-200 hover:bg-card/50 hover:shadow-lg;
+  }
+
+  .data-row:hover {
+    transform: translateY(-1px);
   }
 }
