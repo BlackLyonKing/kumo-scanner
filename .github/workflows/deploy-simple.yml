@@ -56,10 +56,9 @@ jobs:
         # Configure
         apillon config set --key "$APILLON_API_KEY"
         
-        # Navigate to dist directory and deploy
-        cd dist
+        # Deploy using absolute path
         apillon hosting deploy \
           --project-uuid "$APILLON_PROJECT_UUID" \
           --website-uuid "$APILLON_WEBSITE_UUID" \
-          --path "." \
+          --path "./dist" \
           --environment 2
