@@ -18,6 +18,31 @@ export interface TradingSignal {
   chikouSpanStatus: string;
   rsi: number;
   signalGrade: 'A' | 'B' | 'C';
+  priceChange24h?: number;
+  priceChangePercent24h?: number;
+  volume24h?: number;
+  signalStrength?: number; // 0-100 confidence level
+  chartData?: ChartDataPoint[];
+  ichimokuData?: IchimokuChartData;
+}
+
+export interface ChartDataPoint extends CandleData {
+  tenkan?: number;
+  kijun?: number;
+  senkouA?: number;
+  senkouB?: number;
+  chikou?: number;
+  rsi?: number;
+  volume?: number;
+}
+
+export interface IchimokuChartData {
+  tenkanSen: number[];
+  kijunSen: number[];
+  senkouSpanA: number[];
+  senkouSpanB: number[];
+  chikouSpan: number[];
+  timestamps: number[];
 }
 
 export interface CandleData {

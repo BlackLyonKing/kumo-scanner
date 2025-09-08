@@ -105,14 +105,20 @@ const Index = () => {
 
         const dailyIchimoku = calculateIchimokuAndRSI(dailyData);
         const fourHourIchimoku = calculateIchimokuAndRSI(fourHourData);
-        const signal = generateTradingSignal(symbol, dailyIchimoku, fourHourIchimoku);
+        const enhancedSignal = generateTradingSignal(
+          symbol, 
+          dailyIchimoku, 
+          fourHourIchimoku,
+          Math.random() * 10 - 5, // Mock 24h price change
+          Math.random() * 1000000 // Mock volume
+        );
         
         // Send notification for Grade A signals
-        if (signal.signalGrade === 'A') {
-          sendNotification(signal.symbol, signal.signal);
+        if (enhancedSignal.signalGrade === 'A') {
+          sendNotification(enhancedSignal.symbol, enhancedSignal.signal);
         }
         
-        results.push(signal);
+        results.push(enhancedSignal);
       });
       
       setScanProgress(100);

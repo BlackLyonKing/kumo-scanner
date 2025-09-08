@@ -1,4 +1,4 @@
-import { CandleData, IchimokuData, TradingSignal } from "@/types/trading";
+import { CandleData, IchimokuData, TradingSignal, ChartDataPoint } from "@/types/trading";
 
 // Constants for Ichimoku calculations
 export const TENKAN_PERIOD = 9;
@@ -51,7 +51,8 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
         open: parseFloat(row[1]),
         high: parseFloat(row[2]),
         low: parseFloat(row[3]),
-        close: parseFloat(row[4])
+        close: parseFloat(row[4]),
+        volume: parseFloat(row[5]) // Add volume data
       }));
     } else {
       console.error(`Error fetching data for ${symbol} (${interval}):`, data);
@@ -59,6 +60,99 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
     }
   } catch (error) {
     console.error(`Failed to fetch data for ${symbol} (${interval}):`, error);
+    return null;
+  }
+}
+
+export async function fetchEnhancedHistoricalData(symbol: string, interval: string = '1d'): Promise<ChartDataPoint[] | null> {
+  const limit = Math.max(SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 30, 100); // Get more data for charts
+  const url = `${API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (response.ok) {
+      const candleData: CandleData[] = data.map((row: any[]) => ({
+        timestamp: row[0],
+        open: parseFloat(row[1]),
+        high: parseFloat(row[2]),
+        low: parseFloat(row[3]),
+        close: parseFloat(row[4]),
+        volume: parseFloat(row[5])
+      }));
+
+      // Calculate Ichimoku indicators for each point
+      const chartData: ChartDataPoint[] = candleData.map((candle, index) => {
+        if (index < SENKOU_PERIOD) {
+          return { ...candle };
+        }
+
+        const dataSlice = candleData.slice(0, index + 1);
+        const highs = dataSlice.map(d => d.high);
+        const lows = dataSlice.map(d => d.low);
+        const closes = dataSlice.map(d => d.close);
+
+        const getHighestHigh = (arr: number[], periods: number) => 
+          Math.max(...arr.slice(-Math.min(periods, arr.length)));
+        const getLowestLow = (arr: number[], periods: number) => 
+          Math.min(...arr.slice(-Math.min(periods, arr.length)));
+
+        // Calculate Ichimoku components
+        const tenkan = index >= TENKAN_PERIOD ? 
+          (getHighestHigh(highs, TENKAN_PERIOD) + getLowestLow(lows, TENKAN_PERIOD)) / 2 : undefined;
+        
+        const kijun = index >= KIJUN_PERIOD ? 
+          (getHighestHigh(highs, KIJUN_PERIOD) + getLowestLow(lows, KIJUN_PERIOD)) / 2 : undefined;
+
+        const senkouA = tenkan && kijun ? (tenkan + kijun) / 2 : undefined;
+        
+        const senkouB = index >= SENKOU_PERIOD ? 
+          (getHighestHigh(highs, SENKOU_PERIOD) + getLowestLow(lows, SENKOU_PERIOD)) / 2 : undefined;
+
+        const chikou = index >= CHIKOU_PERIOD ? closes[index - CHIKOU_PERIOD] : undefined;
+
+        // RSI calculation for last 14 periods
+        let rsi: number | undefined;
+        if (index >= RSI_PERIOD) {
+          const rsiData = dataSlice.slice(index - RSI_PERIOD, index + 1);
+          let gains = 0;
+          let losses = 0;
+          
+          for (let i = 1; i < rsiData.length; i++) {
+            const change = rsiData[i].close - rsiData[i-1].close;
+            if (change > 0) {
+              gains += change;
+            } else {
+              losses -= change;
+            }
+          }
+
+          const avgGain = gains / RSI_PERIOD;
+          const avgLoss = losses / RSI_PERIOD;
+          const rs = avgGain / avgLoss;
+          rsi = 100 - (100 / (1 + rs));
+          rsi = isNaN(rsi) ? 50 : rsi;
+        }
+
+        return {
+          ...candle,
+          tenkan,
+          kijun,
+          senkouA,
+          senkouB,
+          chikou,
+          rsi
+        };
+      });
+
+      return chartData;
+    } else {
+      console.error(`Error fetching enhanced data for ${symbol} (${interval}):`, data);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch enhanced data for ${symbol} (${interval}):`, error);
     return null;
   }
 }
@@ -123,7 +217,9 @@ export function calculateIchimokuAndRSI(data: CandleData[]): IchimokuData {
 export function generateTradingSignal(
   symbol: string, 
   dailyIchimoku: IchimokuData, 
-  fourHourIchimoku: IchimokuData
+  fourHourIchimoku: IchimokuData,
+  priceChange24h?: number,
+  volume24h?: number
 ): TradingSignal {
   let signal: 'Long Signal' | 'Short Signal' | 'Neutral' = 'Neutral';
   let signalGrade: 'A' | 'B' | 'C' = 'C';
@@ -183,6 +279,9 @@ export function generateTradingSignal(
     }
   }
 
+  // Calculate price change percentage
+  const priceChangePercent24h = priceChange24h ? (priceChange24h / (dailyIchimoku.currentPrice - priceChange24h)) * 100 : 0;
+
   return {
     symbol,
     currentPrice: dailyIchimoku.currentPrice,
@@ -191,7 +290,10 @@ export function generateTradingSignal(
     tkCross,
     chikouSpanStatus,
     rsi: dailyIchimoku.rsi,
-    signalGrade
+    signalGrade,
+    priceChange24h,
+    priceChangePercent24h,
+    volume24h
   };
 }
 

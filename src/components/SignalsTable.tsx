@@ -5,6 +5,8 @@ import { TrendingUp, TrendingDown, Minus, Volume2, VolumeX } from "lucide-react"
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import HelpTooltip from "@/components/HelpTooltip";
+import DetailedSignalView from "@/components/DetailedSignalView";
+import SignalStrengthIndicator from "@/components/SignalStrengthIndicator";
 
 interface SignalsTableProps {
   signals: TradingSignal[];
@@ -185,16 +187,33 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" />
-                      <span className="font-mono font-bold text-foreground">
-                        {signal.symbol}
-                      </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" />
+                        <span className="font-mono font-bold text-foreground">
+                          {signal.symbol}
+                        </span>
+                      </div>
+                      <DetailedSignalView 
+                        signal={signal}
+                        onFetchChartData={async (symbol) => {
+                          // You can pass this as a prop or implement here
+                          return [];
+                        }}
+                      />
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <span className="font-mono text-foreground font-semibold">
                       ${signal.currentPrice.toFixed(2)}
+                      {signal.priceChangePercent24h !== undefined && (
+                        <div className={cn(
+                          "text-xs font-medium ml-2",
+                          signal.priceChangePercent24h >= 0 ? "text-signal-long" : "text-signal-short"
+                        )}>
+                          {signal.priceChangePercent24h >= 0 ? '+' : ''}{signal.priceChangePercent24h.toFixed(2)}%
+                        </div>
+                      )}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -254,13 +273,17 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
-                      signal.signalGrade === 'A' && "bg-signal-long/20 text-signal-long border border-signal-long/30",
-                      signal.signalGrade === 'B' && "bg-warning/20 text-warning border border-warning/30",
-                      signal.signalGrade === 'C' && "bg-muted/20 text-muted-foreground border border-muted/30"
-                    )}>
-                      {signal.signalGrade}
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" />
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+                        signal.signalGrade === 'A' && "bg-signal-long/20 text-signal-long border border-signal-long/30",
+                        signal.signalGrade === 'B' && "bg-warning/20 text-warning border border-warning/30",
+                        signal.signalGrade === 'C' && "bg-muted/20 text-muted-foreground border border-muted/30"
+                      )}>
+                        {signal.signalGrade}
+                      </div>
+                      <SignalStrengthIndicator signal={signal} />
                     </div>
                   </td>
                 </tr>
