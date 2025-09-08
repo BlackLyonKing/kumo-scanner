@@ -1,10 +1,16 @@
 import { Activity, TrendingUp, Sparkles } from "lucide-react";
+import WalletConnect from "./WalletConnect";
 
 const TradingHeader = () => {
   return (
     <header className="relative text-center mb-8 animate-fade-in">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-3xl blur-3xl" />
       <div className="relative">
+        {/* Top row with wallet connection */}
+        <div className="flex justify-end mb-4">
+          <WalletConnect />
+        </div>
+        
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="relative p-4 glass-card rounded-2xl">
             <TrendingUp className="h-10 w-10 text-primary animate-pulse-glow" />
