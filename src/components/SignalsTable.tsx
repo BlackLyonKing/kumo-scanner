@@ -136,6 +136,18 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                     <HelpTooltip content="Current price compared to price 26 periods ago. Above = bullish momentum, below = bearish momentum." />
                   </div>
                 </th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    RSI (14)
+                    <HelpTooltip content="Relative Strength Index. Values above 70 indicate overbought conditions, below 30 indicate oversold conditions." />
+                  </div>
+                </th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    Grade
+                    <HelpTooltip content="Signal quality: A = All conditions + multi-timeframe alignment, B = Basic conditions met, C = No signal or conflicting conditions." />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -174,6 +186,21 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                   </td>
                   <td className="py-4 px-6 text-muted-foreground">
                     {signal.chikouSpanStatus}
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className="font-mono text-foreground">
+                      {signal.rsi.toFixed(1)}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className={cn(
+                      "font-bold",
+                      signal.signalGrade === 'A' && "text-green-500",
+                      signal.signalGrade === 'B' && "text-yellow-500",
+                      signal.signalGrade === 'C' && "text-gray-500"
+                    )}>
+                      {signal.signalGrade}
+                    </span>
                   </td>
                 </tr>
               ))}

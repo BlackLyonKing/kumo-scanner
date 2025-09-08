@@ -5,46 +5,65 @@ export const TENKAN_PERIOD = 9;
 export const KIJUN_PERIOD = 26;
 export const SENKOU_PERIOD = 52;
 export const CHIKOU_PERIOD = 26;
+export const RSI_PERIOD = 14;
 
-// Symbols to scan on Phemex
-export const SYMBOLS = [
-  'ETHUSD', 'BTCUSD', 'XRPUSD', 'SOLUSD', 'BNBUSD',
-  'ADAUSD', 'DOGEUSD', 'AVAXUSD', 'LTCUSD', 'TRXUSD'
-];
+// Binance API configuration
+const API_URL = 'https://api.binance.com/api/v3/klines';
+const SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 
-// CORS proxy and API configuration
-const PROXY_URL = 'https://corsproxy.io/?';
-const API_URL = 'https://api.phemex.com/v1/public/kline';
+export let SYMBOLS: string[] = [];
 
-export async function fetchHistoricalData(symbol: string): Promise<CandleData[] | null> {
-  const now = Math.floor(Date.now() / 1000);
-  const startTime = now - (SENKOU_PERIOD + CHIKOU_PERIOD + 10) * 60 * 60 * 24;
-  
-  const url = PROXY_URL + encodeURIComponent(`${API_URL}?symbol=${symbol}&type=1D&from=${startTime}`);
+export async function getUsdtSymbols(): Promise<string[]> {
+  try {
+    const response = await fetch(SYMBOLS_URL);
+    const data = await response.json();
+    
+    if (response.ok) {
+      const symbols = data.symbols
+        .filter((symbol: any) => symbol.status === 'TRADING' && symbol.quoteAsset === 'USDT')
+        .map((symbol: any) => symbol.symbol)
+        .slice(0, 50); // Limit to 50 symbols for performance
+      
+      SYMBOLS.length = 0;
+      SYMBOLS.push(...symbols);
+      return symbols;
+    } else {
+      console.error('Error fetching symbol list:', data);
+      return [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch symbol list:', error);
+    return [];
+  }
+}
+
+export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
+  const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
+  const url = `${API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   
   try {
     const response = await fetch(url);
     const data = await response.json();
     
-    if (data.code === 0 && data.data && data.data.rows) {
-      return data.data.rows.map((row: any[]) => ({
+    if (response.ok) {
+      return data.map((row: any[]) => ({
         timestamp: row[0],
         open: parseFloat(row[1]),
         high: parseFloat(row[2]),
         low: parseFloat(row[3]),
         close: parseFloat(row[4])
       }));
+    } else {
+      console.error(`Error fetching data for ${symbol} (${interval}):`, data);
+      return null;
     }
-    
-    console.error(`Error fetching data for ${symbol}:`, data);
-    return null;
   } catch (error) {
-    console.error(`Failed to fetch data for ${symbol}:`, error);
+    console.error(`Failed to fetch data for ${symbol} (${interval}):`, error);
     return null;
   }
 }
 
-export function calculateIchimoku(data: CandleData[]): IchimokuData {
+export function calculateIchimokuAndRSI(data: CandleData[]): IchimokuData {
   const highs = data.map(d => d.high);
   const lows = data.map(d => d.low);
   const closes = data.map(d => d.close);
@@ -70,6 +89,25 @@ export function calculateIchimoku(data: CandleData[]): IchimokuData {
   const chikou = closes[closes.length - 1];
   const chikouCompare = closes[closes.length - 1 - CHIKOU_PERIOD];
 
+  // RSI calculation
+  const rsiData = data.slice(-RSI_PERIOD - 1);
+  let gains = 0;
+  let losses = 0;
+  
+  for (let i = 1; i < rsiData.length; i++) {
+    const change = rsiData[i].close - rsiData[i-1].close;
+    if (change > 0) {
+      gains += change;
+    } else {
+      losses -= change;
+    }
+  }
+
+  const avgGain = gains / RSI_PERIOD;
+  const avgLoss = losses / RSI_PERIOD;
+  const rs = avgGain / avgLoss;
+  const rsi = 100 - (100 / (1 + rs));
+
   return {
     tenkan,
     kijun,
@@ -77,56 +115,99 @@ export function calculateIchimoku(data: CandleData[]): IchimokuData {
     senkouB,
     chikou,
     chikouCompare,
-    currentPrice: closes[closes.length - 1]
+    currentPrice: closes[closes.length - 1],
+    rsi: isNaN(rsi) ? 50 : rsi
   };
 }
 
-export function generateTradingSignal(symbol: string, ichimoku: IchimokuData): TradingSignal {
+export function generateTradingSignal(
+  symbol: string, 
+  dailyIchimoku: IchimokuData, 
+  fourHourIchimoku: IchimokuData
+): TradingSignal {
   let signal: 'Long Signal' | 'Short Signal' | 'Neutral' = 'Neutral';
+  let signalGrade: 'A' | 'B' | 'C' = 'C';
   let cloudStatus = '';
   let tkCross = '';
   let chikouSpanStatus = '';
 
   // Check Cloud Status
-  if (ichimoku.currentPrice > Math.max(ichimoku.senkouA, ichimoku.senkouB)) {
-    cloudStatus = 'Above Cloud (Bullish)';
-  } else if (ichimoku.currentPrice < Math.min(ichimoku.senkouA, ichimoku.senkouB)) {
-    cloudStatus = 'Below Cloud (Bearish)';
+  if (dailyIchimoku.currentPrice > Math.max(dailyIchimoku.senkouA, dailyIchimoku.senkouB)) {
+    cloudStatus = 'Above Cloud';
+  } else if (dailyIchimoku.currentPrice < Math.min(dailyIchimoku.senkouA, dailyIchimoku.senkouB)) {
+    cloudStatus = 'Below Cloud';
   } else {
-    cloudStatus = 'In Cloud (Neutral)';
+    cloudStatus = 'In Cloud';
   }
 
   // Check Tenkan/Kijun Cross
-  if (ichimoku.tenkan > ichimoku.kijun) {
+  if (dailyIchimoku.tenkan > dailyIchimoku.kijun) {
     tkCross = 'Bullish Cross';
-  } else if (ichimoku.tenkan < ichimoku.kijun) {
+  } else if (dailyIchimoku.tenkan < dailyIchimoku.kijun) {
     tkCross = 'Bearish Cross';
   } else {
     tkCross = 'No Cross';
   }
 
   // Check Chikou Span Status
-  if (ichimoku.chikou > ichimoku.chikouCompare) {
-    chikouSpanStatus = 'Above (Bullish)';
-  } else if (ichimoku.chikou < ichimoku.chikouCompare) {
-    chikouSpanStatus = 'Below (Bearish)';
+  if (dailyIchimoku.chikou > dailyIchimoku.chikouCompare) {
+    chikouSpanStatus = 'Above';
+  } else if (dailyIchimoku.chikou < dailyIchimoku.chikouCompare) {
+    chikouSpanStatus = 'Below';
   } else {
     chikouSpanStatus = 'Equal';
   }
 
-  // Generate Signal based on confluence
-  if (cloudStatus === 'Above Cloud (Bullish)' && tkCross === 'Bullish Cross' && chikouSpanStatus === 'Above (Bullish)') {
+  // Higher timeframe trend analysis
+  const higherTimeframeTrend = fourHourIchimoku.currentPrice > Math.max(fourHourIchimoku.senkouA, fourHourIchimoku.senkouB) ? 'Bullish' : 
+                               fourHourIchimoku.currentPrice < Math.min(fourHourIchimoku.senkouA, fourHourIchimoku.senkouB) ? 'Bearish' : 'Neutral';
+
+  // RSI conditions
+  const isRsiBullish = dailyIchimoku.rsi > 50 && dailyIchimoku.rsi < 70;
+  const isRsiBearish = dailyIchimoku.rsi < 50 && dailyIchimoku.rsi > 30;
+
+  // Generate Signal and Grade based on confluence
+  if (cloudStatus === 'Above Cloud' && tkCross === 'Bullish Cross' && chikouSpanStatus === 'Above') {
     signal = 'Long Signal';
-  } else if (cloudStatus === 'Below Cloud (Bearish)' && tkCross === 'Bearish Cross' && chikouSpanStatus === 'Below (Bearish)') {
+    if (higherTimeframeTrend === 'Bullish' && isRsiBullish) {
+      signalGrade = 'A';
+    } else {
+      signalGrade = 'B';
+    }
+  } else if (cloudStatus === 'Below Cloud' && tkCross === 'Bearish Cross' && chikouSpanStatus === 'Below') {
     signal = 'Short Signal';
+    if (higherTimeframeTrend === 'Bearish' && isRsiBearish) {
+      signalGrade = 'A';
+    } else {
+      signalGrade = 'B';
+    }
   }
 
   return {
     symbol,
-    currentPrice: ichimoku.currentPrice,
+    currentPrice: dailyIchimoku.currentPrice,
     signal,
     cloudStatus,
     tkCross,
-    chikouSpanStatus
+    chikouSpanStatus,
+    rsi: dailyIchimoku.rsi,
+    signalGrade
   };
+}
+
+// Notification function
+export function sendNotification(symbol: string, signal: string) {
+  if (Notification.permission === "granted") {
+    new Notification('Ichimoku Signal Found!', {
+      body: `A Grade A ${signal} has been found for ${symbol}.`,
+      icon: '/favicon.ico'
+    });
+  }
+}
+
+export function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (!("Notification" in window)) {
+    return Promise.reject("This browser does not support desktop notifications.");
+  }
+  return Notification.requestPermission();
 }

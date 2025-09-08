@@ -6,6 +6,7 @@ export interface IchimokuData {
   chikou: number;
   chikouCompare: number;
   currentPrice: number;
+  rsi: number;
 }
 
 export interface TradingSignal {
@@ -15,6 +16,8 @@ export interface TradingSignal {
   cloudStatus: string;
   tkCross: string;
   chikouSpanStatus: string;
+  rsi: number;
+  signalGrade: 'A' | 'B' | 'C';
 }
 
 export interface CandleData {

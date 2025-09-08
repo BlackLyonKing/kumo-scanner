@@ -10,10 +10,14 @@ import IchimokuEducation from "@/components/IchimokuEducation";
 import { TradingSignal } from "@/types/trading";
 import { 
   fetchHistoricalData, 
-  calculateIchimoku, 
+  calculateIchimokuAndRSI, 
   generateTradingSignal, 
+  getUsdtSymbols,
+  sendNotification,
   SYMBOLS 
 } from "@/utils/ichimoku";
+import GeminiAnalysis from "@/components/GeminiAnalysis";
+import NotificationSettings from "@/components/NotificationSettings";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -62,33 +66,54 @@ const Index = () => {
 
   const scanMarkets = async () => {
     setIsScanning(true);
-    setStatusMessage('Initializing scan...');
+    setStatusMessage('Fetching available symbols...');
     setSignals([]);
     setScanProgress(0);
     
     try {
+      // Get USDT symbols from Binance
+      const symbolsToScan = await getUsdtSymbols();
+      
+      if (symbolsToScan.length === 0) {
+        throw new Error('No symbols available to scan');
+      }
+
+      setStatusMessage(`Fetching historical data for ${symbolsToScan.length} symbols...`);
+      
+      // Fetch all data concurrently for better performance
+      const promises = symbolsToScan.map(async (symbol, index) => {
+        setCurrentSymbol(symbol);
+        setScanProgress((index / symbolsToScan.length) * 50);
+        
+        const dailyData = await fetchHistoricalData(symbol, '1d');
+        const fourHourData = await fetchHistoricalData(symbol, '4h');
+        return { symbol, dailyData, fourHourData };
+      });
+
+      const fetchedData = await Promise.all(promises);
+      setStatusMessage('Analyzing and grading signals...');
+
+      // Process fetched data
       const results: TradingSignal[] = [];
       
-      for (let i = 0; i < SYMBOLS.length; i++) {
-        const symbol = SYMBOLS[i];
-        setCurrentSymbol(symbol);
-        setStatusMessage(`Scanning ${symbol}...`);
-        setScanProgress((i / SYMBOLS.length) * 100);
+      fetchedData.forEach(({ symbol, dailyData, fourHourData }, index) => {
+        setScanProgress(50 + (index / fetchedData.length) * 50);
         
-        const data = await fetchHistoricalData(symbol);
-        
-        if (data && data.length > 0) {
-          const ichimoku = calculateIchimoku(data);
-          const signal = generateTradingSignal(symbol, ichimoku);
-          results.push(signal);
-          
-          // Update results progressively for better UX
-          setSignals([...results]);
+        if (!dailyData || !fourHourData) {
+          return;
         }
 
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
+        const dailyIchimoku = calculateIchimokuAndRSI(dailyData);
+        const fourHourIchimoku = calculateIchimokuAndRSI(fourHourData);
+        const signal = generateTradingSignal(symbol, dailyIchimoku, fourHourIchimoku);
+        
+        // Send notification for Grade A signals
+        if (signal.signalGrade === 'A') {
+          sendNotification(signal.symbol, signal.signal);
+        }
+        
+        results.push(signal);
+      });
       
       setScanProgress(100);
       setSignals(results);
@@ -97,10 +122,11 @@ const Index = () => {
       
       const longSignals = results.filter(r => r.signal === 'Long Signal').length;
       const shortSignals = results.filter(r => r.signal === 'Short Signal').length;
+      const gradeA = results.filter(r => r.signalGrade === 'A').length;
       
       toast({
         title: "Scan Complete! 🎯",
-        description: `Found ${longSignals} long signals and ${shortSignals} short signals across ${results.length} pairs`,
+        description: `Found ${gradeA} Grade A signals (${longSignals} long, ${shortSignals} short) across ${results.length} pairs`,
       });
       
     } catch (error) {
@@ -152,6 +178,11 @@ const Index = () => {
           isLoading={isScanning && signals.length === 0}
           statusMessage={statusMessage}
         />
+        
+        <div className="grid lg:grid-cols-2 gap-8 mt-8">
+          <NotificationSettings />
+          <GeminiAnalysis signals={filteredAndSortedSignals} />
+        </div>
         
         <div className="mt-8">
           <IchimokuEducation />
