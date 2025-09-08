@@ -6,6 +6,7 @@ import ScanControls from "@/components/ScanControls";
 import SignalsTable from "@/components/SignalsTable";
 import ScanProgress from "@/components/ScanProgress";
 import SignalFilters from "@/components/SignalFilters";
+import IchimokuEducation from "@/components/IchimokuEducation";
 import { TradingSignal } from "@/types/trading";
 import { 
   fetchHistoricalData, 
@@ -151,6 +152,10 @@ const Index = () => {
           isLoading={isScanning && signals.length === 0}
           statusMessage={statusMessage}
         />
+        
+        <div className="mt-8">
+          <IchimokuEducation />
+        </div>
       </div>
     </div>
   );

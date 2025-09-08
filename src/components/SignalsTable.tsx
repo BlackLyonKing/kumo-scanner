@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import HelpTooltip from "@/components/HelpTooltip";
 
 interface SignalsTableProps {
   signals: TradingSignal[];
@@ -111,10 +112,30 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               <tr className="text-sm uppercase tracking-wider text-muted-foreground border-b border-border">
                 <th className="py-4 px-6 font-semibold">Symbol</th>
                 <th className="py-4 px-6 font-semibold">Current Price</th>
-                <th className="py-4 px-6 font-semibold">Signal</th>
-                <th className="py-4 px-6 font-semibold">Cloud Status</th>
-                <th className="py-4 px-6 font-semibold">TK Cross</th>
-                <th className="py-4 px-6 font-semibold">Chikou Span</th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    Signal
+                    <HelpTooltip content="Trading signal based on confluence of all Ichimoku indicators. Long/Short signals require all three conditions to align." />
+                  </div>
+                </th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    Cloud Status
+                    <HelpTooltip content="Price position relative to the Ichimoku cloud. Above cloud = bullish zone, below cloud = bearish zone, in cloud = neutral/consolidation." />
+                  </div>
+                </th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    TK Cross
+                    <HelpTooltip content="Tenkan-sen (9) vs Kijun-sen (26) relationship. Bullish when Tenkan above Kijun, bearish when below." />
+                  </div>
+                </th>
+                <th className="py-4 px-6 font-semibold">
+                  <div className="flex items-center gap-2">
+                    Chikou Span
+                    <HelpTooltip content="Current price compared to price 26 periods ago. Above = bullish momentum, below = bearish momentum." />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
