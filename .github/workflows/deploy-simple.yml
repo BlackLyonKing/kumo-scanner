@@ -1,0 +1,54 @@
+name: Simple Apillon Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Build application
+      run: |
+        npm run build
+        echo "Build completed"
+        ls -la dist/
+        
+    - name: Check secrets
+      run: |
+        echo "API Key set: ${{ secrets.APILLON_API_KEY != '' }}"
+        echo "Project UUID set: ${{ secrets.APILLON_PROJECT_UUID != '' }}"
+        echo "Website UUID set: ${{ secrets.APILLON_WEBSITE_UUID != '' }}"
+        
+    - name: Deploy with Apillon CLI
+      env:
+        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+        APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+        APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+      run: |
+        # Install CLI
+        npm install -g @apillon/cli@latest
+        
+        # Configure
+        apillon config set --key "$APILLON_API_KEY"
+        
+        # Simple deploy to production
+        apillon hosting deploy \
+          --project-uuid "$APILLON_PROJECT_UUID" \
+          --website-uuid "$APILLON_WEBSITE_UUID" \
+          --path "./dist" \
+          --environment 2
