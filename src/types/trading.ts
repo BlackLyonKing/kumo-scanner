@@ -33,7 +33,6 @@ export interface ChartDataPoint extends CandleData {
   senkouB?: number;
   chikou?: number;
   rsi?: number;
-  volume?: number;
 }
 
 export interface IchimokuChartData {
@@ -51,4 +50,5 @@ export interface CandleData {
   high: number;
   low: number;
   close: number;
+  volume: number;
 }
