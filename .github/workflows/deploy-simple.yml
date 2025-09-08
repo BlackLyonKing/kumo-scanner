@@ -34,6 +34,16 @@ jobs:
         echo "Project UUID set: ${{ secrets.APILLON_PROJECT_UUID != '' }}"
         echo "Website UUID set: ${{ secrets.APILLON_WEBSITE_UUID != '' }}"
         
+    - name: Verify build output
+      run: |
+        echo "Checking build output..."
+        ls -la dist/
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ index.html not found in dist/"
+          exit 1
+        fi
+        echo "✅ index.html found"
+        
     - name: Deploy with Apillon CLI
       env:
         APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
@@ -46,9 +56,10 @@ jobs:
         # Configure
         apillon config set --key "$APILLON_API_KEY"
         
-        # Simple deploy to production
+        # Navigate to dist directory and deploy
+        cd dist
         apillon hosting deploy \
           --project-uuid "$APILLON_PROJECT_UUID" \
           --website-uuid "$APILLON_WEBSITE_UUID" \
-          --path "./dist" \
+          --path "." \
           --environment 2
