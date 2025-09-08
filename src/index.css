@@ -148,27 +148,17 @@
   }
 
   .signal-badge-long {
-    @apply px-3 py-1 rounded-full text-xs font-bold tracking-wide;
-    background: var(--gradient-signal-long);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    box-shadow: var(--shadow-signal-long);
-    border: 1px solid hsl(var(--signal-long) / 0.3);
+    @apply font-bold text-sm;
+    color: hsl(142 76% 55%);
   }
 
   .signal-badge-short {
-    @apply px-3 py-1 rounded-full text-xs font-bold tracking-wide;
-    background: var(--gradient-signal-short);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    box-shadow: var(--shadow-signal-short);
-    border: 1px solid hsl(var(--signal-short) / 0.3);
+    @apply font-bold text-sm;
+    color: hsl(0 84% 70%);
   }
 
   .signal-badge-neutral {
-    @apply px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-muted/80 text-foreground;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    border: 1px solid hsl(var(--border));
+    @apply font-medium text-sm text-muted-foreground;
   }
 
   .premium-button {
