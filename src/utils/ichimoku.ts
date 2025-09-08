@@ -8,8 +8,8 @@ export const CHIKOU_PERIOD = 26;
 export const RSI_PERIOD = 14;
 
 // Binance API configuration
-const API_URL = 'https://api.binance.com/api/v3/klines';
-const SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
+const API_URL = import.meta.env.DEV ? '/api/binance/api/v3/klines' : 'https://api.binance.com/api/v3/klines';
+const SYMBOLS_URL = import.meta.env.DEV ? '/api/binance/api/v3/exchangeInfo' : 'https://api.binance.com/api/v3/exchangeInfo';
 
 export let SYMBOLS: string[] = [];
 
