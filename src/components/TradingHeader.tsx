@@ -1,5 +1,6 @@
 import { Activity, TrendingUp, Sparkles } from "lucide-react";
 import WalletConnect from "./WalletConnect";
+import blkLogo from "/lovable-uploads/b1afa972-7ed7-4b6c-8fa9-e150b28a48e3.png";
 
 const TradingHeader = () => {
   return (
@@ -18,11 +19,18 @@ const TradingHeader = () => {
               <Sparkles className="h-3 w-3 sm:h-5 sm:w-5 text-accent animate-pulse" />
             </div>
           </div>
-          <div className="text-center">
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-2">
-              Ichimoku Scanner
-            </h1>
-            <div className="h-1 w-16 sm:w-24 mx-auto rounded-full bg-gradient-to-r from-primary to-accent" />
+          <div className="text-center flex items-center gap-4">
+            <img 
+              src={blkLogo} 
+              alt="B.L.K Trading Tools Logo" 
+              className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 object-contain animate-pulse-glow"
+            />
+            <div>
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-2">
+                B.L.K Trading Tools
+              </h1>
+              <div className="h-1 w-16 sm:w-24 mx-auto rounded-full bg-gradient-to-r from-primary to-accent" />
+            </div>
           </div>
           <div className="relative p-2 sm:p-4 glass-card rounded-xl sm:rounded-2xl">
             <Activity className="h-6 w-6 sm:h-10 sm:w-10 text-signal-long animate-pulse-glow" />
