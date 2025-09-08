@@ -112,7 +112,7 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
     <Card className="glass-card animate-fade-in overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       <CardContent className="relative p-0">
-        <div className="flex justify-between items-center p-6 border-b border-border/50 bg-card/50 backdrop-blur-sm">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-border/50 bg-card/50 backdrop-blur-sm">
           <div>
             <h3 className="text-xl font-bold text-foreground mb-1">
               Live Market Signals
@@ -121,12 +121,12 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               {signals.length} pairs analyzed • Updated in real-time
             </p>
           </div>
-          <Button
+            <Button
             variant={soundEnabled ? "default" : "outline"}
             size="sm"
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={cn(
-              "relative overflow-hidden transition-all duration-300 border-primary/20 shadow-lg",
+              "relative overflow-hidden transition-all duration-300 border-primary/20 shadow-lg min-h-[36px]",
               "hover:shadow-primary/20 hover:scale-105 hover:border-primary/40",
               soundEnabled 
                 ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-primary/30" 
@@ -147,7 +147,8 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
           </Button>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left table-auto">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-muted-foreground border-b border-border/50 bg-muted/20">
@@ -305,6 +306,133 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-4 p-4">
+          {signals.map((signal, index) => (
+            <div 
+              key={signal.symbol}
+              className={cn(
+                "relative p-4 rounded-xl border glass-card animate-fade-in",
+                signal.signal === 'Long Signal' && "border-l-4 border-l-signal-long bg-signal-long/5",
+                signal.signal === 'Short Signal' && "border-l-4 border-l-signal-short bg-signal-short/5",
+                signal.signal === 'Neutral' && "border-l-4 border-l-muted bg-muted/5"
+              )}
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              {/* Header with Symbol, Price and Grade */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
+                  <span className="font-mono font-bold text-lg text-foreground">
+                    {signal.symbol}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+                    signal.signalGrade === 'A' && "bg-signal-long/20 text-signal-long border border-signal-long/30",
+                    signal.signalGrade === 'B' && "bg-warning/20 text-warning border border-warning/30",
+                    signal.signalGrade === 'C' && "bg-muted/20 text-muted-foreground border border-muted/30"
+                  )}>
+                    {signal.signalGrade}
+                  </div>
+                  <DetailedSignalView 
+                    signal={signal}
+                    onFetchChartData={async (symbol) => {
+                      return [];
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Price and Price Change */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xl font-bold text-foreground">
+                    ${signal.currentPrice.toFixed(2)}
+                  </span>
+                  {signal.priceChangePercent24h !== undefined && (
+                    <span className={cn(
+                      "text-sm font-medium px-2 py-1 rounded-full",
+                      signal.priceChangePercent24h >= 0 
+                        ? "text-signal-long bg-signal-long/10" 
+                        : "text-signal-short bg-signal-short/10"
+                    )}>
+                      {signal.priceChangePercent24h >= 0 ? '+' : ''}{signal.priceChangePercent24h.toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Main Signal */}
+              <div className="flex items-center gap-3 mb-4">
+                {getSignalIcon(signal.signal)}
+                <span className={cn(
+                  "text-lg font-bold",
+                  getSignalClassName(signal.signal)
+                )}>
+                  {signal.signal}
+                </span>
+                <SignalStrengthIndicator signal={signal} />
+              </div>
+
+              {/* Indicator Grid */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="space-y-1">
+                  <div className="text-muted-foreground font-medium">Cloud Status</div>
+                  <div className={cn(
+                    "font-semibold",
+                    signal.cloudStatus === 'Above Cloud' && "text-signal-long",
+                    signal.cloudStatus === 'Below Cloud' && "text-signal-short",
+                    signal.cloudStatus === 'In Cloud' && "text-muted-foreground"
+                  )}>
+                    {signal.cloudStatus}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-muted-foreground font-medium">TK Cross</div>
+                  <div className={cn(
+                    "font-semibold",
+                    signal.tkCross === 'Bullish Cross' && "text-signal-long",
+                    signal.tkCross === 'Bearish Cross' && "text-signal-short",
+                    signal.tkCross === 'No Cross' && "text-muted-foreground"
+                  )}>
+                    {signal.tkCross}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-muted-foreground font-medium">Chikou Span</div>
+                  <div className={cn(
+                    "font-semibold",
+                    signal.chikouSpanStatus === 'Above' && "text-signal-long",
+                    signal.chikouSpanStatus === 'Below' && "text-signal-short",
+                    signal.chikouSpanStatus === 'Equal' && "text-muted-foreground"
+                  )}>
+                    {signal.chikouSpanStatus}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-muted-foreground font-medium">RSI (14)</div>
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      signal.rsi > 70 && "bg-signal-short animate-pulse",
+                      signal.rsi < 30 && "bg-signal-long animate-pulse",
+                      signal.rsi >= 30 && signal.rsi <= 70 && "bg-muted-foreground"
+                    )} />
+                    <span className="font-mono font-semibold">
+                      {signal.rsi.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

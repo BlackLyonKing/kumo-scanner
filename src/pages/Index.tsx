@@ -152,7 +152,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-7xl">
         <TradingHeader />
         <RiskWarning />
         <ScanControls 
@@ -185,7 +185,7 @@ const Index = () => {
           statusMessage={statusMessage}
         />
         
-        <div className="grid lg:grid-cols-2 gap-8 mt-8">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 mt-4 sm:mt-8">
           <NotificationSettings />
           <GeminiAnalysis signals={filteredAndSortedSignals} />
         </div>

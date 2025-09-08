@@ -31,7 +31,7 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
         <Button 
           onClick={onScan}
           disabled={isScanning}
-          className="premium-button text-white font-bold py-3 px-8 rounded-xl text-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100 disabled:opacity-60"
+          className="premium-button text-white font-bold py-3 px-6 sm:px-8 rounded-xl text-base sm:text-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100 disabled:opacity-60 min-h-[44px]"
         >
           {isScanning ? (
             <>
