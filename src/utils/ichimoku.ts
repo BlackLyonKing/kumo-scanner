@@ -13,16 +13,51 @@ const SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 
 export let SYMBOLS: string[] = [];
 
+// Configuration for different base currencies and limits
+export interface ScanConfig {
+  baseCurrencies: string[];
+  maxSymbols: number;
+  includeStablecoins?: boolean;
+}
+
+export const DEFAULT_SCAN_CONFIG: ScanConfig = {
+  baseCurrencies: ['USDT'],
+  maxSymbols: 50,
+  includeStablecoins: false
+};
+
 export async function getUsdtSymbols(): Promise<string[]> {
+  return getTradingSymbols(DEFAULT_SCAN_CONFIG);
+}
+
+export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG): Promise<string[]> {
   try {
     const response = await fetch(SYMBOLS_URL);
     const data = await response.json();
     
     if (response.ok) {
-      const symbols = data.symbols
-        .filter((symbol: any) => symbol.status === 'TRADING' && symbol.quoteAsset === 'USDT')
+      let symbols = data.symbols
+        .filter((symbol: any) => {
+          // Must be trading and in one of our base currencies
+          const isTrading = symbol.status === 'TRADING';
+          const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
+          
+          // Filter out stablecoins if not wanted
+          if (!config.includeStablecoins) {
+            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
+            const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
+            return isTrading && hasBaseCurrency && !isStablecoin;
+          }
+          
+          return isTrading && hasBaseCurrency;
+        })
         .map((symbol: any) => symbol.symbol)
-        .slice(0, 50); // Limit to 50 symbols for performance
+        .sort(); // Sort alphabetically for consistency
+      
+      // Apply symbol limit
+      if (config.maxSymbols > 0) {
+        symbols = symbols.slice(0, config.maxSymbols);
+      }
       
       SYMBOLS.length = 0;
       SYMBOLS.push(...symbols);
@@ -36,6 +71,35 @@ export async function getUsdtSymbols(): Promise<string[]> {
     return [];
   }
 }
+
+// Preset configurations for different scan types
+export const SCAN_PRESETS: Record<string, ScanConfig> = {
+  usdt_only: {
+    baseCurrencies: ['USDT'],
+    maxSymbols: 50,
+    includeStablecoins: false
+  },
+  major_pairs: {
+    baseCurrencies: ['USDT', 'BTC', 'ETH'],
+    maxSymbols: 100,
+    includeStablecoins: false
+  },
+  comprehensive: {
+    baseCurrencies: ['USDT', 'BTC', 'ETH', 'BNB'],
+    maxSymbols: 200,
+    includeStablecoins: true
+  },
+  btc_pairs: {
+    baseCurrencies: ['BTC'],
+    maxSymbols: 50,
+    includeStablecoins: false
+  },
+  eth_pairs: {
+    baseCurrencies: ['ETH'],
+    maxSymbols: 50,
+    includeStablecoins: false
+  }
+};
 
 export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
   const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;

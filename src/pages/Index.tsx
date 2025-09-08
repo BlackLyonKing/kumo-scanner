@@ -12,7 +12,8 @@ import {
   fetchHistoricalData, 
   calculateIchimokuAndRSI, 
   generateTradingSignal, 
-  getUsdtSymbols,
+  getTradingSymbols,
+  SCAN_PRESETS,
   sendNotification,
   SYMBOLS 
 } from "@/utils/ichimoku";
@@ -64,15 +65,15 @@ const Index = () => {
     return filtered;
   }, [signals, signalFilter, sortBy, sortOrder]);
 
-  const scanMarkets = async () => {
+  const scanMarkets = async (scanType: string = 'usdt_only') => {
     setIsScanning(true);
     setStatusMessage('Fetching available symbols...');
     setSignals([]);
     setScanProgress(0);
     
     try {
-      // Get USDT symbols from Binance
-      const symbolsToScan = await getUsdtSymbols();
+      // Get symbols based on selected scan type
+      const symbolsToScan = await getTradingSymbols(SCAN_PRESETS[scanType as keyof typeof SCAN_PRESETS]);
       
       if (symbolsToScan.length === 0) {
         throw new Error('No symbols available to scan');
