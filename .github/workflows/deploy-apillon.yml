@@ -37,7 +37,7 @@ jobs:
         
         # Configure Apillon CLI
         echo "Configuring Apillon CLI..."
-        apillon config set --key "$APILLON_API_KEY" --secret "$APILLON_API_SECRET"
+        apillon config set --key "$APILLON_API_KEY"
         
         # Deploy to staging first
         echo "Deploying to staging..."

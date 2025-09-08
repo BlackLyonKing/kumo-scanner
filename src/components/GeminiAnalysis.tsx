@@ -116,9 +116,9 @@ const GeminiAnalysis = ({ signals }: GeminiAnalysisProps) => {
           </div>
           <div>
             <h3 className="text-xl font-bold">AI Market Analysis</h3>
-            <p className="text-sm text-muted-foreground font-normal">
+            <span className="text-sm text-muted-foreground font-normal">
               Powered by Google Gemini • Advanced Trading Intelligence
-            </p>
+            </span>
           </div>
         </CardTitle>
       </CardHeader>
