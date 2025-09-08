@@ -122,13 +122,28 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
             </p>
           </div>
           <Button
-            variant="outline"
+            variant={soundEnabled ? "default" : "outline"}
             size="sm"
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="premium-button gap-2 border-primary/30"
+            className={cn(
+              "relative overflow-hidden transition-all duration-300 border-primary/20 shadow-lg",
+              "hover:shadow-primary/20 hover:scale-105 hover:border-primary/40",
+              soundEnabled 
+                ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-primary/30" 
+                : "bg-background/50 backdrop-blur-sm hover:bg-primary/5"
+            )}
           >
-            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            {soundEnabled ? 'Sound On' : 'Sound Off'}
+            <div className="flex items-center gap-2 relative z-10">
+              {soundEnabled ? (
+                <Volume2 className="h-4 w-4 animate-pulse" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+              {soundEnabled ? 'Sound On' : 'Sound Off'}
+            </div>
+            {soundEnabled && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+            )}
           </Button>
         </div>
         

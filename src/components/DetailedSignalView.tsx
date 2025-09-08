@@ -40,10 +40,14 @@ const DetailedSignalView = ({ signal, onFetchChartData }: DetailedSignalViewProp
           variant="outline" 
           size="sm"
           onClick={handleOpenChart}
-          className="glass-card border-primary/30 hover:bg-primary/10"
+          className="group relative overflow-hidden bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm border-primary/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-105"
         >
-          <Eye className="h-4 w-4 mr-2" />
-          View Details
+          <div className="flex items-center gap-2 relative z-10">
+            <Eye className="h-4 w-4 group-hover:text-primary transition-colors duration-300" />
+            <span className="font-medium">View Details</span>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300" />
         </Button>
       </DialogTrigger>
       
