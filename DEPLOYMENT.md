@@ -69,6 +69,68 @@ We've provided two GitHub Actions workflows:
 3. Update your domain's DNS records as instructed
 4. SSL certificates are automatically generated
 
+## 🔍 Troubleshooting Deployment Issues
+
+### 1. Verify GitHub Secrets
+Double-check all secrets are properly configured:
+- Go to your repository → **Settings** → **Secrets and variables** → **Actions**
+- Ensure these secrets exist with correct values:
+  - `APILLON_API_KEY` 
+  - `APILLON_PROJECT_UUID`
+  - `APILLON_WEBSITE_UUID`
+
+### 2. Use Debug Workflow
+Run the debug workflow to identify specific issues:
+1. Go to your repository → **Actions** tab
+2. Select **Debug Apillon Deployment** workflow  
+3. Click **Run workflow** button
+4. Review the detailed logs for errors
+
+### 3. Common Error Solutions
+
+**"Secret not found" errors:**
+- Re-create the GitHub secret with correct name
+- Ensure no extra spaces in secret values
+- Copy UUIDs directly from Apillon dashboard
+
+**Build failures:**
+- Check if `npm run build` works locally
+- Verify all dependencies are compatible
+- Look for TypeScript compilation errors
+
+**Apillon CLI errors:**
+- Invalid API key: Generate new key in Apillon dashboard
+- Project/Website not found: Double-check UUIDs
+- Network timeout: Re-run the workflow
+
+**"dist folder not found":**
+- Build process failed - check build step logs
+- Ensure Vite configuration is correct
+
+### 4. Manual Local Testing
+Test your build locally before deploying:
+```bash
+# Clone your repository
+git clone your-repo-url
+cd your-repo
+
+# Install and build
+npm install
+npm run build
+
+# Verify build output
+ls -la dist/
+```
+
+### 5. Step-by-Step Debugging
+If deployment still fails:
+
+1. **Check the Actions logs**: Go to Actions → failed run → click each step
+2. **Verify build output**: Ensure `dist/` folder contains `index.html`
+3. **Test Apillon credentials**: Use debug workflow to test CLI configuration
+4. **Check Apillon dashboard**: Verify project and website exist
+5. **Review workflow file**: Ensure no syntax errors in YAML
+
 ## 📊 Benefits
 
 - ✅ **Decentralized**: Your site lives on IPFS

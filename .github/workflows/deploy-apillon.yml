@@ -26,35 +26,74 @@ jobs:
     - name: Build application
       run: npm run build
       
+    - name: Verify GitHub Secrets
+      run: |
+        echo "Checking if secrets are set..."
+        if [ -z "${{ secrets.APILLON_API_KEY }}" ]; then
+          echo "❌ APILLON_API_KEY secret is not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.APILLON_PROJECT_UUID }}" ]; then
+          echo "❌ APILLON_PROJECT_UUID secret is not set"  
+          exit 1
+        fi
+        if [ -z "${{ secrets.APILLON_WEBSITE_UUID }}" ]; then
+          echo "❌ APILLON_WEBSITE_UUID secret is not set"
+          exit 1
+        fi
+        echo "✅ All required secrets are configured"
+        
+    - name: Verify Build Output
+      run: |
+        echo "Checking build output..."
+        if [ ! -d "./dist" ]; then
+          echo "❌ dist folder not found after build"
+          exit 1
+        fi
+        echo "✅ Build output verified"
+        ls -la ./dist/
+
     - name: Deploy to Apillon Web3 Hosting
       env:
         APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
         APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
         APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
       run: |
-        # Install Apillon CLI
-        npm install -g @apillon/cli
+        set -e  # Exit on any error
         
-        # Configure Apillon CLI
+        # Install Apillon CLI with specific version
+        echo "Installing Apillon CLI..."
+        npm install -g @apillon/cli@latest
+        
+        # Verify CLI installation
+        apillon --version
+        
+        # Configure Apillon CLI with debugging
         echo "Configuring Apillon CLI..."
         apillon config set --key "$APILLON_API_KEY"
         
+        # Verify configuration
+        echo "Verifying Apillon configuration..."
+        apillon config show
+        
         # Deploy to staging first
-        echo "Deploying to staging..."
+        echo "Deploying to staging environment..."
         apillon hosting deploy \
           --project-uuid "$APILLON_PROJECT_UUID" \
           --website-uuid "$APILLON_WEBSITE_UUID" \
           --path "./dist" \
-          --environment 1
+          --environment 1 \
+          --verbose
         
-        # Deploy to production (only on main/master branch)
+        # Deploy to production (only on main/master branch)  
         if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-          echo "Deploying to production..."
+          echo "Deploying to production environment..."
           apillon hosting deploy \
             --project-uuid "$APILLON_PROJECT_UUID" \
             --website-uuid "$APILLON_WEBSITE_UUID" \
             --path "./dist" \
-            --environment 2
+            --environment 2 \
+            --verbose
         fi
         
     - name: Notify deployment status

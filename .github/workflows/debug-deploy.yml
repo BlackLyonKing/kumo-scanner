@@ -1,0 +1,80 @@
+name: Debug Apillon Deployment
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Debug Environment
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Current directory: $(pwd)"
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref }}"
+        
+    - name: Check Secrets (Masked)
+      run: |
+        echo "APILLON_API_KEY length: ${#APILLON_API_KEY}"
+        echo "APILLON_PROJECT_UUID length: ${#APILLON_PROJECT_UUID}"  
+        echo "APILLON_WEBSITE_UUID length: ${#APILLON_WEBSITE_UUID}"
+      env:
+        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+        APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+        APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+        
+    - name: Install dependencies
+      run: |
+        echo "Installing dependencies..."
+        npm ci
+        echo "Dependencies installed successfully"
+        
+    - name: Build application
+      run: |
+        echo "Building application..."
+        npm run build
+        echo "Build completed"
+        
+    - name: Check Build Output
+      run: |
+        echo "Checking build output..."
+        ls -la
+        if [ -d "dist" ]; then
+          echo "✅ dist folder exists"
+          echo "Contents of dist folder:"
+          ls -la dist/
+          echo "Total size: $(du -sh dist/)"
+        else
+          echo "❌ dist folder not found"
+          exit 1
+        fi
+        
+    - name: Test Apillon CLI
+      env:
+        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+      run: |
+        echo "Installing Apillon CLI..."
+        npm install -g @apillon/cli@latest
+        
+        echo "CLI version:"
+        apillon --version
+        
+        echo "Configuring CLI..."
+        apillon config set --key "$APILLON_API_KEY"
+        
+        echo "Testing CLI configuration..."
+        apillon config show
+        
+        echo "CLI test completed"
