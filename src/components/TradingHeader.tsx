@@ -1,6 +1,4 @@
-import { Activity, TrendingUp, Sparkles, GraduationCap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Activity, TrendingUp, Sparkles } from "lucide-react";
 import WalletConnect from "./WalletConnect";
 import blkLogo from "/lovable-uploads/b1afa972-7ed7-4b6c-8fa9-e150b28a48e3.png";
 
@@ -9,14 +7,8 @@ const TradingHeader = () => {
     <header className="relative text-center mb-8 animate-fade-in">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-3xl blur-3xl" />
       <div className="relative">
-        {/* Top row with navigation and wallet connection */}
-        <div className="flex justify-between items-center mb-4">
-          <Link to="/education">
-            <Button variant="outline" className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4" />
-              Trading Education
-            </Button>
-          </Link>
+        {/* Top row with wallet connection */}
+        <div className="flex justify-end mb-4">
           <WalletConnect />
         </div>
         

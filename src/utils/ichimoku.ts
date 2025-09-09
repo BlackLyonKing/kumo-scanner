@@ -7,9 +7,9 @@ export const SENKOU_PERIOD = 52;
 export const CHIKOU_PERIOD = 26;
 export const RSI_PERIOD = 14;
 
-// CoinGecko API configuration (no geographic restrictions)
-const API_URL = 'https://api.coingecko.com/api/v3/coins';
-const SYMBOLS_URL = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1';
+// Binance API configuration
+const API_URL = 'https://api.binance.com/api/v3/klines';
+const SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 
 export let SYMBOLS: string[] = [];
 
@@ -36,37 +36,39 @@ export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG
     const data = await response.json();
     
     if (response.ok) {
-      // CoinGecko returns different format - map to our expected symbol format
-      let symbols = data
-        .filter((coin: any) => coin.symbol && coin.market_cap_rank <= config.maxSymbols)
-        .map((coin: any) => coin.symbol.toUpperCase() + 'USDT');
-        
-      // Filter stablecoins if requested
-      if (!config.includeStablecoins) {
-        const stablecoins = ['USDT', 'USDC', 'BUSD', 'DAI', 'TUSD', 'PAXG', 'GUSD'];
-        symbols = symbols.filter((symbol: string) => 
-          !stablecoins.some(stable => symbol.startsWith(stable))
-        );
+      let symbols = data.symbols
+        .filter((symbol: any) => {
+          // Must be trading and in one of our base currencies
+          const isTrading = symbol.status === 'TRADING';
+          const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
+          
+          // Filter out stablecoins if not wanted
+          if (!config.includeStablecoins) {
+            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
+            const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
+            return isTrading && hasBaseCurrency && !isStablecoin;
+          }
+          
+          return isTrading && hasBaseCurrency;
+        })
+        .map((symbol: any) => symbol.symbol)
+        .sort(); // Sort alphabetically for consistency
+      
+      // Apply symbol limit
+      if (config.maxSymbols > 0) {
+        symbols = symbols.slice(0, config.maxSymbols);
       }
       
       SYMBOLS.length = 0;
-      SYMBOLS.push(...symbols.slice(0, config.maxSymbols));
-      return symbols.slice(0, config.maxSymbols);
+      SYMBOLS.push(...symbols);
+      return symbols;
     } else {
-      console.error('Error fetching symbols:', data);
-      // Return fallback symbols for demo
-      const fallback = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT', 'LINKUSDT'];
-      SYMBOLS.length = 0;
-      SYMBOLS.push(...fallback);
-      return fallback;
+      console.error('Error fetching symbol list:', data);
+      return [];
     }
   } catch (error) {
-    console.error('Failed to fetch symbols:', error);
-    // Return fallback symbols for demo
-    const fallback = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT', 'LINKUSDT'];
-    SYMBOLS.length = 0;
-    SYMBOLS.push(...fallback);
-    return fallback;
+    console.error('Failed to fetch symbol list:', error);
+    return [];
   }
 }
 
@@ -100,43 +102,28 @@ export const SCAN_PRESETS: Record<string, ScanConfig> = {
 };
 
 export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
-  // Generate mock historical data for demo purposes
-  // In production, you would use a paid API service with authentication
+  const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
+  const url = `${API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  
   try {
-    const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
-    const mockData: CandleData[] = [];
+    const response = await fetch(url);
+    const data = await response.json();
     
-    const basePrice = Math.random() * 100 + 20; // Random base price between 20-120
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
-    
-    for (let i = limit - 1; i >= 0; i--) {
-      const timestamp = now - (i * oneDay);
-      const volatility = 0.05; // 5% daily volatility
-      const trend = Math.sin(i / 10) * 0.02; // Slight trending pattern
-      
-      const prevClose = i === limit - 1 ? basePrice : mockData[mockData.length - 1].close;
-      const change = (Math.random() - 0.5) * volatility + trend;
-      
-      const open = prevClose * (1 + change * 0.5);
-      const close = open * (1 + change);
-      const high = Math.max(open, close) * (1 + Math.random() * 0.03);
-      const low = Math.min(open, close) * (1 - Math.random() * 0.03);
-      const volume = Math.random() * 1000000 + 100000;
-      
-      mockData.push({
-        timestamp,
-        open: parseFloat(open.toFixed(2)),
-        high: parseFloat(high.toFixed(2)),
-        low: parseFloat(low.toFixed(2)),
-        close: parseFloat(close.toFixed(2)),
-        volume: parseFloat(volume.toFixed(0))
-      });
+    if (response.ok) {
+      return data.map((row: any[]) => ({
+        timestamp: row[0],
+        open: parseFloat(row[1]),
+        high: parseFloat(row[2]),
+        low: parseFloat(row[3]),
+        close: parseFloat(row[4]),
+        volume: parseFloat(row[5]) // Add volume data
+      }));
+    } else {
+      console.error(`Error fetching data for ${symbol} (${interval}):`, data);
+      return null;
     }
-    
-    return mockData;
   } catch (error) {
-    console.error(`Failed to generate data for ${symbol} (${interval}):`, error);
+    console.error(`Failed to fetch data for ${symbol} (${interval}):`, error);
     return null;
   }
 }
