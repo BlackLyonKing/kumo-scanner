@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TradingHeader from "@/components/TradingHeader";
 import RiskWarning from "@/components/RiskWarning";
 import ScanControls from "@/components/ScanControls";
@@ -157,53 +158,67 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-7xl relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 max-w-7xl relative z-10">
         <TradingHeader />
         <VpnNotice />
         <RiskWarning />
-        <ScanControls 
-          onScan={scanMarkets}
-          isScanning={isScanning}
-          lastUpdated={lastUpdated}
-        />
         
-        <ScanProgress 
-          currentSymbol={currentSymbol}
-          progress={scanProgress}
-          totalSymbols={SYMBOLS.length}
-          isVisible={isScanning}
-        />
-        
-        {signals.length > 0 && (
-          <SignalFilters
-            signalFilter={signalFilter}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSignalFilterChange={setSignalFilter}
-            onSortByChange={setSortBy}
-            onSortOrderChange={setSortOrder}
-          />
-        )}
-        
-        <SignalsTable 
-          signals={filteredAndSortedSignals}
-          isLoading={isScanning && signals.length === 0}
-          statusMessage={statusMessage}
-        />
-        
-        <div className="mt-4 sm:mt-8">
-          <MarketData />
-        </div>
-        
-        <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 mt-4 sm:mt-8">
-          <NotificationSettings />
-          <GeminiAnalysis signals={filteredAndSortedSignals} />
-        </div>
-        
-        <div className="grid gap-8 mt-8">
-          <IchimokuEducation />
-          <PremiumEducation />
-        </div>
+        <Tabs defaultValue="scanner" className="w-full mt-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="scanner">Scanner</TabsTrigger>
+            <TabsTrigger value="market">Market Data</TabsTrigger>
+            <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            <TabsTrigger value="education">Education</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="scanner" className="space-y-4 mt-4">
+            <ScanControls 
+              onScan={scanMarkets}
+              isScanning={isScanning}
+              lastUpdated={lastUpdated}
+            />
+            
+            <ScanProgress 
+              currentSymbol={currentSymbol}
+              progress={scanProgress}
+              totalSymbols={SYMBOLS.length}
+              isVisible={isScanning}
+            />
+            
+            {signals.length > 0 && (
+              <SignalFilters
+                signalFilter={signalFilter}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSignalFilterChange={setSignalFilter}
+                onSortByChange={setSortBy}
+                onSortOrderChange={setSortOrder}
+              />
+            )}
+            
+            <SignalsTable 
+              signals={filteredAndSortedSignals}
+              isLoading={isScanning && signals.length === 0}
+              statusMessage={statusMessage}
+            />
+          </TabsContent>
+          
+          <TabsContent value="market" className="mt-4">
+            <MarketData />
+          </TabsContent>
+          
+          <TabsContent value="analysis" className="space-y-4 mt-4">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <NotificationSettings />
+              <GeminiAnalysis signals={filteredAndSortedSignals} />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="education" className="space-y-4 mt-4">
+            <IchimokuEducation />
+            <PremiumEducation />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
