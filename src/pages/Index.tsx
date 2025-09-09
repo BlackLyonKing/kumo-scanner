@@ -21,6 +21,7 @@ import {
 import GeminiAnalysis from "@/components/GeminiAnalysis";
 import NotificationSettings from "@/components/NotificationSettings";
 import VpnNotice from "@/components/VpnNotice";
+import { MarketData } from "@/components/MarketData";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -189,6 +190,10 @@ const Index = () => {
           isLoading={isScanning && signals.length === 0}
           statusMessage={statusMessage}
         />
+        
+        <div className="mt-4 sm:mt-8">
+          <MarketData />
+        </div>
         
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 mt-4 sm:mt-8">
           <NotificationSettings />
