@@ -7,6 +7,7 @@ import SignalsTable from "@/components/SignalsTable";
 import ScanProgress from "@/components/ScanProgress";
 import SignalFilters from "@/components/SignalFilters";
 import IchimokuEducation from "@/components/IchimokuEducation";
+import PremiumEducation from "@/components/PremiumEducation";
 import { TradingSignal } from "@/types/trading";
 import { 
   fetchHistoricalData, 
@@ -193,8 +194,9 @@ const Index = () => {
           <GeminiAnalysis signals={filteredAndSortedSignals} />
         </div>
         
-        <div className="mt-8">
+        <div className="grid gap-8 mt-8">
           <IchimokuEducation />
+          <PremiumEducation />
         </div>
       </div>
     </div>
