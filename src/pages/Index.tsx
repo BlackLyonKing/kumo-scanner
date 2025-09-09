@@ -19,6 +19,7 @@ import {
 } from "@/utils/ichimoku";
 import GeminiAnalysis from "@/components/GeminiAnalysis";
 import NotificationSettings from "@/components/NotificationSettings";
+import VpnNotice from "@/components/VpnNotice";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -155,6 +156,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-7xl">
         <TradingHeader />
+        <VpnNotice />
         <RiskWarning />
         <ScanControls 
           onScan={scanMarkets}
