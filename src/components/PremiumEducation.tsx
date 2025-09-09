@@ -82,7 +82,7 @@ const PremiumEducation = () => {
       date: "Every Wednesday",
       time: "8:00 PM EST",
       duration: "60 min",
-      instructor: "Sarah Chen",
+      instructor: "Crypto-Lion",
       topic: "Live Ichimoku analysis of top crypto pairs",
       attendees: "89+",
       price: "Free for Premium Members"
@@ -92,7 +92,7 @@ const PremiumEducation = () => {
       date: "Every Friday",
       time: "7:00 PM EST",
       duration: "90 min",
-      instructor: "Michael Rodriguez",
+      instructor: "BegCoins",
       topic: "Advanced trading strategies and Q&A session",
       attendees: "67+", 
       price: "0.0007 ETH/session"
@@ -102,7 +102,7 @@ const PremiumEducation = () => {
       date: "Every Monday",
       time: "9:00 AM EST", 
       duration: "45 min",
-      instructor: "David Kim",
+      instructor: "Crypto-Lion",
       topic: "How major events affect crypto markets",
       attendees: "124+",
       price: "Free for All Members"
@@ -157,7 +157,7 @@ const PremiumEducation = () => {
   const masterclasses = [
     {
       title: "Advanced Technical Analysis Masterclass",
-      instructor: "Pro Trader Academy",
+      instructor: "BegCoins Academy",
       duration: "3 days",
       date: "March 15-17, 2024",
       price: "0.0136 ETH",
@@ -180,7 +180,7 @@ const PremiumEducation = () => {
     },
     {
       title: "Algorithmic Trading Bootcamp",
-      instructor: "QuantCrypto Institute", 
+      instructor: "Crypto-Lion Institute", 
       duration: "5 days",
       date: "April 8-12, 2024",
       price: "0.0227 ETH",
