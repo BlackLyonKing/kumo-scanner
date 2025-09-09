@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Zap
 } from "lucide-react";
+import CryptoPayment from './CryptoPayment';
 
 const PremiumEducation = () => {
   const [activeTab, setActiveTab] = useState("courses");
@@ -266,10 +267,16 @@ const PremiumEducation = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button className="flex-1">
-                        <PlayCircle className="h-4 w-4 mr-2" />
-                        Enroll Now
-                      </Button>
+                      <CryptoPayment 
+                        amount={course.price}
+                        title={course.title}
+                        description="Premium Trading Course"
+                      >
+                        <Button className="flex-1">
+                          <PlayCircle className="h-4 w-4 mr-2" />
+                          Enroll Now
+                        </Button>
+                      </CryptoPayment>
                       <Button variant="outline">Preview</Button>
                     </div>
                   </CardContent>
@@ -312,10 +319,23 @@ const PremiumEducation = () => {
                     <p className="text-muted-foreground mb-4">{webinar.topic}</p>
                     
                     <div className="flex gap-2">
-                      <Button>
-                        <Video className="h-4 w-4 mr-2" />
-                        Register Now
-                      </Button>
+                      {webinar.price.includes('ETH') ? (
+                        <CryptoPayment 
+                          amount={webinar.price.replace('/session', '')}
+                          title={webinar.title}
+                          description="Live Trading Session"
+                        >
+                          <Button>
+                            <Video className="h-4 w-4 mr-2" />
+                            Register Now
+                          </Button>
+                        </CryptoPayment>
+                      ) : (
+                        <Button>
+                          <Video className="h-4 w-4 mr-2" />
+                          Register Now
+                        </Button>
+                      )}
                       <Button variant="outline">Add to Calendar</Button>
                     </div>
                   </CardContent>
@@ -363,10 +383,16 @@ const PremiumEducation = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button>
-                        <Users className="h-4 w-4 mr-2" />
-                        Book Session
-                      </Button>
+                      <CryptoPayment 
+                        amount={session.price}
+                        title={session.title}
+                        description="1-on-1 Coaching Session"
+                      >
+                        <Button>
+                          <Users className="h-4 w-4 mr-2" />
+                          Book Session
+                        </Button>
+                      </CryptoPayment>
                       <Button variant="outline">Learn More</Button>
                     </div>
                   </CardContent>
@@ -433,10 +459,16 @@ const PremiumEducation = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Reserve Spot
-                      </Button>
+                      <CryptoPayment 
+                        amount={masterclass.earlyBird}
+                        title={masterclass.title}
+                        description="Early Bird Workshop Access"
+                      >
+                        <Button>
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Reserve Spot (Early Bird)
+                        </Button>
+                      </CryptoPayment>
                       <Button variant="outline">Download Brochure</Button>
                     </div>
                   </CardContent>
