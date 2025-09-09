@@ -27,9 +27,9 @@ const PremiumEducation = () => {
       level: "Beginner to Advanced", 
       duration: "8 hours",
       modules: 12,
-      price: "$199",
+      price: "0.0045 ETH",
       rating: 4.9,
-      students: "2,847",
+      students: "342",
       description: "Master the complete Ichimoku system from basic concepts to advanced trading strategies.",
       features: [
         "Cloud analysis techniques",
@@ -44,9 +44,9 @@ const PremiumEducation = () => {
       level: "Intermediate",
       duration: "6 hours", 
       modules: 8,
-      price: "$149",
+      price: "0.0034 ETH",
       rating: 4.8,
-      students: "1,923",
+      students: "187",
       description: "Learn to identify and trade the most profitable chart patterns in crypto markets.",
       features: [
         "20+ chart patterns",
@@ -61,9 +61,9 @@ const PremiumEducation = () => {
       level: "All Levels",
       duration: "4 hours",
       modules: 6, 
-      price: "$99",
+      price: "0.0023 ETH",
       rating: 4.7,
-      students: "3,156",
+      students: "256",
       description: "Understand market psychology and emotional discipline for consistent profits.",
       features: [
         "Fear and greed cycles",
@@ -83,7 +83,7 @@ const PremiumEducation = () => {
       duration: "60 min",
       instructor: "Sarah Chen",
       topic: "Live Ichimoku analysis of top crypto pairs",
-      attendees: "500+",
+      attendees: "89+",
       price: "Free for Premium Members"
     },
     {
@@ -93,8 +93,8 @@ const PremiumEducation = () => {
       duration: "90 min",
       instructor: "Michael Rodriguez",
       topic: "Advanced trading strategies and Q&A session",
-      attendees: "300+", 
-      price: "$29/session"
+      attendees: "67+", 
+      price: "0.0007 ETH/session"
     },
     {
       title: "Market News & Events Impact",
@@ -103,7 +103,7 @@ const PremiumEducation = () => {
       duration: "45 min",
       instructor: "David Kim",
       topic: "How major events affect crypto markets",
-      attendees: "750+",
+      attendees: "124+",
       price: "Free for All Members"
     }
   ];
@@ -112,7 +112,7 @@ const PremiumEducation = () => {
     {
       title: "1-on-1 Trading Mentorship",
       duration: "60 minutes",
-      price: "$299",
+      price: "0.0068 ETH",
       description: "Personalized trading guidance with expert mentors",
       features: [
         "Portfolio review",
@@ -126,7 +126,7 @@ const PremiumEducation = () => {
     {
       title: "Strategy Optimization Session",
       duration: "45 minutes", 
-      price: "$199",
+      price: "0.0045 ETH",
       description: "Optimize your existing trading strategies",
       features: [
         "Strategy backtesting",
@@ -140,7 +140,7 @@ const PremiumEducation = () => {
     {
       title: "Psychology Coaching",
       duration: "30 minutes",
-      price: "$149", 
+      price: "0.0034 ETH", 
       description: "Overcome emotional trading challenges",
       features: [
         "Emotional assessment",
@@ -159,8 +159,8 @@ const PremiumEducation = () => {
       instructor: "Pro Trader Academy",
       duration: "3 days",
       date: "March 15-17, 2024",
-      price: "$599",
-      earlyBird: "$399",
+      price: "0.0136 ETH",
+      earlyBird: "0.0091 ETH",
       description: "Intensive 3-day masterclass covering advanced TA concepts",
       topics: [
         "Multi-timeframe analysis",
@@ -182,8 +182,8 @@ const PremiumEducation = () => {
       instructor: "QuantCrypto Institute", 
       duration: "5 days",
       date: "April 8-12, 2024",
-      price: "$999",
-      earlyBird: "$699",
+      price: "0.0227 ETH",
+      earlyBird: "0.0159 ETH",
       description: "Learn to build and deploy automated trading systems",
       topics: [
         "Python for trading",
