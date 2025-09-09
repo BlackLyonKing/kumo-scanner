@@ -28,7 +28,7 @@ const PremiumEducation = () => {
       level: "Beginner to Advanced", 
       duration: "8 hours",
       modules: 12,
-      price: "0.0045 ETH",
+      price: "0.068 ETH",
       rating: 4.9,
       students: "342",
       description: "Master the complete Ichimoku system from basic concepts to advanced trading strategies.",
@@ -45,7 +45,7 @@ const PremiumEducation = () => {
       level: "Intermediate",
       duration: "6 hours", 
       modules: 8,
-      price: "0.0034 ETH",
+      price: "0.055 ETH",
       rating: 4.8,
       students: "187",
       description: "Learn to identify and trade the most profitable chart patterns in crypto markets.",
@@ -62,7 +62,7 @@ const PremiumEducation = () => {
       level: "All Levels",
       duration: "4 hours",
       modules: 6, 
-      price: "0.0023 ETH",
+      price: "0.045 ETH",
       rating: 4.7,
       students: "256",
       description: "Understand market psychology and emotional discipline for consistent profits.",
@@ -113,7 +113,7 @@ const PremiumEducation = () => {
     {
       title: "1-on-1 Trading Mentorship",
       duration: "60 minutes",
-      price: "0.0068 ETH",
+      price: "0.075 ETH",
       description: "Personalized trading guidance with expert mentors",
       features: [
         "Portfolio review",
@@ -127,7 +127,7 @@ const PremiumEducation = () => {
     {
       title: "Strategy Optimization Session",
       duration: "45 minutes", 
-      price: "0.0045 ETH",
+      price: "0.058 ETH",
       description: "Optimize your existing trading strategies",
       features: [
         "Strategy backtesting",
@@ -141,7 +141,7 @@ const PremiumEducation = () => {
     {
       title: "Psychology Coaching",
       duration: "30 minutes",
-      price: "0.0034 ETH", 
+      price: "0.048 ETH", 
       description: "Overcome emotional trading challenges",
       features: [
         "Emotional assessment",
@@ -160,8 +160,8 @@ const PremiumEducation = () => {
       instructor: "BegCoins Academy",
       duration: "3 days",
       date: "March 15-17, 2024",
-      price: "0.0136 ETH",
-      earlyBird: "0.0091 ETH",
+      price: "0.072 ETH",
+      earlyBird: "0.052 ETH",
       description: "Intensive 3-day masterclass covering advanced TA concepts",
       topics: [
         "Multi-timeframe analysis",
@@ -183,8 +183,8 @@ const PremiumEducation = () => {
       instructor: "Crypto-Lion Institute", 
       duration: "5 days",
       date: "April 8-12, 2024",
-      price: "0.0227 ETH",
-      earlyBird: "0.0159 ETH",
+      price: "0.078 ETH",
+      earlyBird: "0.062 ETH",
       description: "Learn to build and deploy automated trading systems",
       topics: [
         "Python for trading",
