@@ -154,8 +154,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-7xl">
+    <div className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-7xl relative z-10">
         <TradingHeader />
         <VpnNotice />
         <RiskWarning />
