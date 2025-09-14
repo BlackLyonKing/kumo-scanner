@@ -28,8 +28,26 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
       tokens: '100'
     },
     { 
+      value: 'binance_futures_all', 
+      label: 'Binance Futures (All)', 
+      description: '~300 tokens - All Binance perpetual futures',
+      tokens: '300'
+    },
+    { 
+      value: 'phemex_futures_all', 
+      label: 'Phemex Futures (All)', 
+      description: '~200 tokens - All Phemex perpetual futures',
+      tokens: '200'
+    },
+    { 
+      value: 'all_futures_combined', 
+      label: 'All Futures Combined', 
+      description: '~500 tokens - Binance + Phemex futures',
+      tokens: '500'
+    },
+    { 
       value: 'comprehensive', 
-      label: 'Comprehensive Scan', 
+      label: 'Comprehensive Spot', 
       description: '~200 tokens - All major base currencies',
       tokens: '200'
     },

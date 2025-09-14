@@ -7,9 +7,11 @@ export const SENKOU_PERIOD = 52;
 export const CHIKOU_PERIOD = 26;
 export const RSI_PERIOD = 14;
 
-// Binance API configuration
-const API_URL = 'https://api.binance.com/api/v3/klines';
-const SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
+// API configuration for multiple exchanges
+const BINANCE_API_URL = 'https://api.binance.com/api/v3/klines';
+const BINANCE_SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
+const BINANCE_FUTURES_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
+const PHEMEX_SYMBOLS_URL = 'https://api.phemex.com/exchange/public/products';
 
 export let SYMBOLS: string[] = [];
 
@@ -18,31 +20,65 @@ export interface ScanConfig {
   baseCurrencies: string[];
   maxSymbols: number;
   includeStablecoins?: boolean;
+  exchanges?: string[];
+  futuresOnly?: boolean;
 }
 
 export const DEFAULT_SCAN_CONFIG: ScanConfig = {
   baseCurrencies: ['USDT'],
   maxSymbols: 50,
-  includeStablecoins: false
+  includeStablecoins: false,
+  exchanges: ['binance'],
+  futuresOnly: false
 };
 
 export async function getUsdtSymbols(): Promise<string[]> {
   return getTradingSymbols(DEFAULT_SCAN_CONFIG);
 }
 
-export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG): Promise<string[]> {
+// Get Binance futures symbols
+async function getBinanceFuturesSymbols(config: ScanConfig): Promise<string[]> {
   try {
-    const response = await fetch(SYMBOLS_URL);
+    const response = await fetch(BINANCE_FUTURES_URL);
     const data = await response.json();
     
     if (response.ok) {
-      let symbols = data.symbols
+      return data.symbols
         .filter((symbol: any) => {
-          // Must be trading and in one of our base currencies
+          const isTrading = symbol.status === 'TRADING';
+          const isContract = symbol.contractType === 'PERPETUAL';
+          const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
+          
+          if (!config.includeStablecoins) {
+            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
+            const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
+            return isTrading && isContract && hasBaseCurrency && !isStablecoin;
+          }
+          
+          return isTrading && isContract && hasBaseCurrency;
+        })
+        .map((symbol: any) => symbol.symbol)
+        .sort();
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch Binance futures symbols:', error);
+    return [];
+  }
+}
+
+// Get Binance spot symbols
+async function getBinanceSpotSymbols(config: ScanConfig): Promise<string[]> {
+  try {
+    const response = await fetch(BINANCE_SYMBOLS_URL);
+    const data = await response.json();
+    
+    if (response.ok) {
+      return data.symbols
+        .filter((symbol: any) => {
           const isTrading = symbol.status === 'TRADING';
           const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
           
-          // Filter out stablecoins if not wanted
           if (!config.includeStablecoins) {
             const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
             const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
@@ -52,20 +88,96 @@ export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG
           return isTrading && hasBaseCurrency;
         })
         .map((symbol: any) => symbol.symbol)
-        .sort(); // Sort alphabetically for consistency
+        .sort();
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch Binance spot symbols:', error);
+    return [];
+  }
+}
+
+// Get Phemex symbols (futures)
+async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
+  try {
+    const response = await fetch(PHEMEX_SYMBOLS_URL);
+    const data = await response.json();
+    
+    if (response.ok && data.data) {
+      return data.data
+        .filter((product: any) => {
+          const isActive = product.status === 'Listed';
+          const isFutures = product.type === 'Perpetual';
+          const quoteCurrency = product.quoteCurrency;
+          const hasBaseCurrency = config.baseCurrencies.some(base => 
+            quoteCurrency === base || (base === 'USDT' && quoteCurrency === 'USD')
+          );
+          
+          if (!config.includeStablecoins) {
+            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
+            const baseCurrency = product.baseCurrency;
+            const isStablecoin = stablecoins.some(stable => baseCurrency === stable);
+            return isActive && isFutures && hasBaseCurrency && !isStablecoin;
+          }
+          
+          return isActive && isFutures && hasBaseCurrency;
+        })
+        .map((product: any) => {
+          // Convert Phemex symbol format to Binance-like format for consistency
+          return product.symbol.replace('USD', 'USDT');
+        })
+        .sort();
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch Phemex symbols:', error);
+    return [];
+  }
+}
+
+export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG): Promise<string[]> {
+  let allSymbols: string[] = [];
+  
+  try {
+    const exchanges = config.exchanges || ['binance'];
+    
+    for (const exchange of exchanges) {
+      let exchangeSymbols: string[] = [];
       
-      // Apply symbol limit
-      if (config.maxSymbols > 0) {
-        symbols = symbols.slice(0, config.maxSymbols);
+      switch (exchange) {
+        case 'binance':
+          if (config.futuresOnly) {
+            exchangeSymbols = await getBinanceFuturesSymbols(config);
+          } else {
+            exchangeSymbols = await getBinanceSpotSymbols(config);
+          }
+          break;
+        case 'binance-futures':
+          exchangeSymbols = await getBinanceFuturesSymbols(config);
+          break;
+        case 'phemex':
+          exchangeSymbols = await getPhemexSymbols(config);
+          break;
+        default:
+          console.warn(`Unknown exchange: ${exchange}`);
       }
       
-      SYMBOLS.length = 0;
-      SYMBOLS.push(...symbols);
-      return symbols;
-    } else {
-      console.error('Error fetching symbol list:', data);
-      return [];
+      allSymbols.push(...exchangeSymbols);
     }
+    
+    // Remove duplicates and sort
+    const uniqueSymbols = [...new Set(allSymbols)].sort();
+    
+    // Apply symbol limit
+    let symbols = uniqueSymbols;
+    if (config.maxSymbols > 0) {
+      symbols = symbols.slice(0, config.maxSymbols);
+    }
+    
+    SYMBOLS.length = 0;
+    SYMBOLS.push(...symbols);
+    return symbols;
+    
   } catch (error) {
     console.error('Failed to fetch symbol list:', error);
     return [];
@@ -77,33 +189,59 @@ export const SCAN_PRESETS: Record<string, ScanConfig> = {
   usdt_only: {
     baseCurrencies: ['USDT'],
     maxSymbols: 50,
-    includeStablecoins: false
+    includeStablecoins: false,
+    exchanges: ['binance']
   },
   major_pairs: {
     baseCurrencies: ['USDT', 'BTC', 'ETH'],
     maxSymbols: 100,
-    includeStablecoins: false
+    includeStablecoins: false,
+    exchanges: ['binance']
   },
   comprehensive: {
     baseCurrencies: ['USDT', 'BTC', 'ETH', 'BNB'],
     maxSymbols: 200,
-    includeStablecoins: true
+    includeStablecoins: true,
+    exchanges: ['binance']
+  },
+  binance_futures_all: {
+    baseCurrencies: ['USDT'],
+    maxSymbols: 300,
+    includeStablecoins: false,
+    exchanges: ['binance-futures'],
+    futuresOnly: true
+  },
+  phemex_futures_all: {
+    baseCurrencies: ['USDT', 'USD'],
+    maxSymbols: 200,
+    includeStablecoins: false,
+    exchanges: ['phemex'],
+    futuresOnly: true
+  },
+  all_futures_combined: {
+    baseCurrencies: ['USDT', 'USD'],
+    maxSymbols: 500,
+    includeStablecoins: false,
+    exchanges: ['binance-futures', 'phemex'],
+    futuresOnly: true
   },
   btc_pairs: {
     baseCurrencies: ['BTC'],
     maxSymbols: 50,
-    includeStablecoins: false
+    includeStablecoins: false,
+    exchanges: ['binance']
   },
   eth_pairs: {
     baseCurrencies: ['ETH'],
     maxSymbols: 50,
-    includeStablecoins: false
+    includeStablecoins: false,
+    exchanges: ['binance']
   }
 };
 
 export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
   const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
-  const url = `${API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const url = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   
   try {
     const response = await fetch(url);
@@ -130,7 +268,7 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
 
 export async function fetchEnhancedHistoricalData(symbol: string, interval: string = '1d'): Promise<ChartDataPoint[] | null> {
   const limit = Math.max(SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 30, 100); // Get more data for charts
-  const url = `${API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const url = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   
   try {
     const response = await fetch(url);
