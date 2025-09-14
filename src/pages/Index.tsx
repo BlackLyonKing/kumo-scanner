@@ -32,6 +32,7 @@ const Index = () => {
   const [currentSymbol, setCurrentSymbol] = useState("");
   const [scanProgress, setScanProgress] = useState(0);
   const [signalFilter, setSignalFilter] = useState("all");
+  const [gradeFilter, setGradeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("symbol");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const { toast } = useToast();
@@ -42,7 +43,12 @@ const Index = () => {
     
     // Apply signal filter
     if (signalFilter !== "all") {
-      filtered = signals.filter(signal => signal.signal === signalFilter);
+      filtered = filtered.filter(signal => signal.signal === signalFilter);
+    }
+    
+    // Apply grade filter
+    if (gradeFilter !== "all") {
+      filtered = filtered.filter(signal => signal.signalGrade === gradeFilter);
     }
     
     // Apply sorting
@@ -67,7 +73,7 @@ const Index = () => {
     });
     
     return filtered;
-  }, [signals, signalFilter, sortBy, sortOrder]);
+  }, [signals, signalFilter, gradeFilter, sortBy, sortOrder]);
 
   const scanMarkets = async (scanType: string = 'usdt_only') => {
     setIsScanning(true);
@@ -188,9 +194,11 @@ const Index = () => {
             {signals.length > 0 && (
               <SignalFilters
                 signalFilter={signalFilter}
+                gradeFilter={gradeFilter}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSignalFilterChange={setSignalFilter}
+                onGradeFilterChange={setGradeFilter}
                 onSortByChange={setSortBy}
                 onSortOrderChange={setSortOrder}
               />

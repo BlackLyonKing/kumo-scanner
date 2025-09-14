@@ -5,18 +5,22 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface SignalFiltersProps {
   signalFilter: string;
+  gradeFilter: string;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   onSignalFilterChange: (value: string) => void;
+  onGradeFilterChange: (value: string) => void;
   onSortByChange: (value: string) => void;
   onSortOrderChange: (value: 'asc' | 'desc') => void;
 }
 
 const SignalFilters = ({
   signalFilter,
+  gradeFilter,
   sortBy,
   sortOrder,
   onSignalFilterChange,
+  onGradeFilterChange,
   onSortByChange,
   onSortOrderChange
 }: SignalFiltersProps) => {
@@ -41,6 +45,21 @@ const SignalFilters = ({
                   <SelectItem value="Long Signal">Long Only</SelectItem>
                   <SelectItem value="Short Signal">Short Only</SelectItem>
                   <SelectItem value="Neutral">Neutral Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Grade:</span>
+              <Select value={gradeFilter} onValueChange={onGradeFilterChange}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="All grades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Grades</SelectItem>
+                  <SelectItem value="A">Grade A</SelectItem>
+                  <SelectItem value="B">Grade B</SelectItem>
+                  <SelectItem value="C">Grade C</SelectItem>
                 </SelectContent>
               </Select>
             </div>
