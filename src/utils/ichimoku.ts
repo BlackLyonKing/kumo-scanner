@@ -1,4 +1,5 @@
 import { CandleData, IchimokuData, TradingSignal, ChartDataPoint } from "@/types/trading";
+import { monitoredFetch, fetchWithRetry } from "@/utils/apiMonitoring";
 
 // Constants for Ichimoku calculations
 export const TENKAN_PERIOD = 9;
@@ -12,6 +13,27 @@ const BINANCE_API_URL = 'https://api.binance.com/api/v3/klines';
 const BINANCE_SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 const BINANCE_FUTURES_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
 const PHEMEX_SYMBOLS_URL = 'https://api.phemex.com/exchange/public/products';
+
+// Rate limiting for API calls
+class RateLimiter {
+  private lastCallTime = 0;
+  private minInterval = 100; // 100ms between calls
+  
+  async throttle(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastCall = now - this.lastCallTime;
+    
+    if (timeSinceLastCall < this.minInterval) {
+      const delay = this.minInterval - timeSinceLastCall;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    this.lastCallTime = Date.now();
+  }
+}
+
+// Global rate limiter instance
+const rateLimiter = new RateLimiter();
 
 export let SYMBOLS: string[] = [];
 
@@ -97,40 +119,75 @@ async function getBinanceSpotSymbols(config: ScanConfig): Promise<string[]> {
   }
 }
 
-// Get Phemex symbols (futures)
+// Get Phemex symbols (futures) - Improved with better error handling
 async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
   try {
-    const response = await fetch(PHEMEX_SYMBOLS_URL);
+    console.log('Fetching Phemex symbols...');
+    
+    const response = await fetchWithRetry(PHEMEX_SYMBOLS_URL, {
+      method: 'GET'
+    }, 2, 1000); // 2 retries with 1 second base delay
+    
+    if (!response.ok) {
+      throw new Error(`Phemex API error: ${response.status} ${response.statusText}`);
+    }
+    
     const data = await response.json();
     
-    if (response.ok && data.data) {
-      return data.data
-        .filter((product: any) => {
-          const isActive = product.status === 'Listed';
-          const isFutures = product.type === 'Perpetual';
-          const quoteCurrency = product.quoteCurrency;
-          const hasBaseCurrency = config.baseCurrencies.some(base => 
-            quoteCurrency === base || (base === 'USDT' && quoteCurrency === 'USD')
-          );
-          
-          if (!config.includeStablecoins) {
-            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
-            const baseCurrency = product.baseCurrency;
-            const isStablecoin = stablecoins.some(stable => baseCurrency === stable);
-            return isActive && isFutures && hasBaseCurrency && !isStablecoin;
-          }
-          
-          return isActive && isFutures && hasBaseCurrency;
-        })
-        .map((product: any) => {
-          // Convert Phemex symbol format to Binance-like format for consistency
-          return product.symbol.replace('USD', 'USDT');
-        })
-        .sort();
+    if (!data.data) {
+      console.warn('Invalid Phemex API response structure');
+      return [];
     }
-    return [];
+    
+    const products = data.data.filter((product: any) => {
+      const isActive = product.status === 'Listed';
+      const isFutures = product.type === 'Perpetual';
+      const quoteCurrency = product.quoteCurrency;
+      
+      // Enhanced base currency matching
+      const hasBaseCurrency = config.baseCurrencies.some(base => 
+        quoteCurrency === base || (base === 'USDT' && quoteCurrency === 'USD')
+      );
+      
+      if (!config.includeStablecoins) {
+        const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD', 'FDUSD'];
+        const baseCurrency = product.baseCurrency;
+        const isStablecoin = stablecoins.some(stable => baseCurrency === stable);
+        return isActive && isFutures && hasBaseCurrency && !isStablecoin;
+      }
+      
+      return isActive && isFutures && hasBaseCurrency;
+    });
+    
+    const symbols = products
+      .map((product: any) => {
+        // Improved symbol format conversion for consistency
+        let symbol = product.symbol;
+        
+        // Handle different quote currencies consistently
+        if (symbol.endsWith('USD') && !symbol.endsWith('USDT')) {
+          symbol = symbol.replace(/USD$/, 'USDT');
+        }
+        
+        return symbol;
+      })
+      .sort();
+    
+    console.log(`Retrieved ${symbols.length} Phemex symbols`);
+    return symbols;
+    
   } catch (error) {
-    console.error('Failed to fetch Phemex symbols:', error);
+    if (error instanceof Error) {
+      if (error.name === 'TimeoutError') {
+        console.error('Phemex API request timeout');
+      } else if (error.name === 'AbortError') {
+        console.error('Phemex API request aborted');
+      } else {
+        console.error('Failed to fetch Phemex symbols:', error.message);
+      }
+    } else {
+      console.error('Unknown error fetching Phemex symbols:', error);
+    }
     return [];
   }
 }
@@ -241,27 +298,79 @@ export const SCAN_PRESETS: Record<string, ScanConfig> = {
 
 export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
   const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
-  const url = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    // Apply rate limiting to prevent API abuse
+    await rateLimiter.throttle();
     
-    if (response.ok) {
+    // Determine which exchange to use based on symbol characteristics
+    const isPhemexSymbol = symbol.includes('USD') && !symbol.includes('USDT');
+    
+    let response: Response;
+    let data: any;
+    
+    if (isPhemexSymbol) {
+      // Use Phemex API for Phemex symbols
+      const phemexSymbol = symbol.replace('USDT', 'USD');
+      const phemexInterval = interval === '1d' ? '1D' : (interval === '4h' ? '4h' : '1h');
+      
+      response = await fetchWithRetry(
+        `https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`,
+        { method: 'GET' },
+        2, 1000
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Phemex API error: ${response.status} ${response.statusText}`);
+      }
+      
+      data = await response.json();
+      
+      if (!data.data || !data.data.rows) {
+        console.warn(`No data available for Phemex symbol ${symbol}`);
+        return null;
+      }
+      
+      // Convert Phemex format to standard format
+      return data.data.rows.map((row: any[]) => ({
+        timestamp: row[0] * 1000, // Convert seconds to milliseconds
+        open: row[1] / Math.pow(10, 8), // Phemex uses scaled prices
+        high: row[2] / Math.pow(10, 8),
+        low: row[3] / Math.pow(10, 8),
+        close: row[4] / Math.pow(10, 8),
+        volume: row[5] || 0
+      }));
+    } else {
+      // Use Binance API for Binance symbols
+      const url = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+      
+      response = await fetchWithRetry(url, { method: 'GET' }, 2, 1000);
+      
+      if (!response.ok) {
+        throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
+      }
+      
+      data = await response.json();
+      
       return data.map((row: any[]) => ({
         timestamp: row[0],
         open: parseFloat(row[1]),
         high: parseFloat(row[2]),
         low: parseFloat(row[3]),
         close: parseFloat(row[4]),
-        volume: parseFloat(row[5]) // Add volume data
+        volume: parseFloat(row[5])
       }));
-    } else {
-      console.error(`Error fetching data for ${symbol} (${interval}):`, data);
-      return null;
     }
   } catch (error) {
-    console.error(`Failed to fetch data for ${symbol} (${interval}):`, error);
+    if (error instanceof Error) {
+      if (error.name === 'TimeoutError') {
+        console.error(`Timeout fetching data for ${symbol} (${interval})`);
+      } else {
+        console.error(`Error fetching data for ${symbol} (${interval}):`, error.message);
+      }
+    } else {
+      console.error(`Unknown error fetching data for ${symbol} (${interval}):`, error);
+    }
     return null;
   }
 }
