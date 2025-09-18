@@ -163,7 +163,8 @@ async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
     console.log(`📋 Total Phemex products: ${allProducts.length}`);
     
     const filteredProducts = allProducts.filter((product: any) => {
-      const isActive = product.status === 'Listed';
+      const rawStatus = product.status;
+      const isActive = rawStatus ? (String(rawStatus).toLowerCase() === 'listed' || String(rawStatus).toLowerCase() === 'trading') : true;
       const isFutures = product.type === 'Perpetual';
       const quoteCurrency = product.quoteCurrency;
       const baseCurrency = product.baseCurrency;
@@ -206,7 +207,7 @@ async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
         let normalizedSymbol = originalSymbol;
         
         // Only normalize if absolutely necessary for display
-        if (originalSymbol.endsWith('USD') && !originalSymbol.endsWith('USDT')) {
+        if (false && originalSymbol.endsWith('USD') && !originalSymbol.endsWith('USDT')) {
           // For display purposes, convert USD to USDT but keep original for API calls
           normalizedSymbol = originalSymbol.replace(/USD$/, 'USDT');
         }
