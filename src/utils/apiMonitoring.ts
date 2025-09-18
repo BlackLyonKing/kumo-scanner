@@ -128,8 +128,7 @@ export async function monitoredFetch(
       signal: options?.signal || controller.signal,
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Trading-Scanner/1.0',
-        ...options?.headers
+        ...(options?.headers || {})
       }
     });
     

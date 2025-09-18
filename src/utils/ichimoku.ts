@@ -14,6 +14,11 @@ const BINANCE_SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 const BINANCE_FUTURES_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
 const PHEMEX_SYMBOLS_URL = 'https://api.phemex.com/exchange/public/products';
 
+// Browser CORS proxy fallback for Phemex (their API often blocks browser origins)
+const CORS_PROXY = 'https://corsproxy.io/?';
+const withProxy = (url: string) => `${CORS_PROXY}${encodeURIComponent(url)}`;
+
+
 // Rate limiting for API calls
 class RateLimiter {
   private lastCallTime = 0;
@@ -124,7 +129,7 @@ async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
   try {
     console.log('🔄 Fetching Phemex symbols...', { config });
     
-    const response = await fetchWithRetry(PHEMEX_SYMBOLS_URL, {
+    const response = await fetchWithRetry(withProxy(PHEMEX_SYMBOLS_URL), {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -369,7 +374,7 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
       console.log(`📈 Fetching Phemex data for ${phemexSymbol}, interval: ${phemexInterval}`);
       
       response = await fetchWithRetry(
-        `https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`,
+        withProxy(`https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`),
         { 
           method: 'GET',
           headers: {
