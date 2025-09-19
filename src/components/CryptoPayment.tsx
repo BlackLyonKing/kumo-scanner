@@ -15,7 +15,7 @@ interface CryptoPaymentProps {
 }
 
 const WALLET_ADDRESSES = {
-  ETH: '0xa4020E26CD12fe42107584e94bDEdc961CbBbC7C',
+  ETH: '0x688E39dd4C75630BF1900D34BC0826f2bef4BCE1',
   BTC: '1EjLYy11JjtNrTt7cwtmJCfZWyAUHZ7fpa',
   SOL: '9nt3BzBV3qu2w94ytpsARgQAuTJQRyNpYsCz58mmzH1E'
 };
