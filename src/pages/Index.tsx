@@ -9,6 +9,7 @@ import ScanProgress from "@/components/ScanProgress";
 import SignalFilters from "@/components/SignalFilters";
 import IchimokuEducation from "@/components/IchimokuEducation";
 import PremiumEducation from "@/components/PremiumEducation";
+import EntryTimer from "@/components/EntryTimer";
 import { TradingSignal } from "@/types/trading";
 import { 
   fetchHistoricalData, 
@@ -178,11 +179,18 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-4 mt-4">
-            <ScanControls 
-              onScan={scanMarkets}
-              isScanning={isScanning}
-              lastUpdated={lastUpdated}
-            />
+            <div className="grid lg:grid-cols-3 gap-4 mb-4">
+              <div className="lg:col-span-2">
+                <ScanControls 
+                  onScan={scanMarkets}
+                  isScanning={isScanning}
+                  lastUpdated={lastUpdated}
+                />
+              </div>
+              <div>
+                <EntryTimer />
+              </div>
+            </div>
             
             <ScanProgress 
               currentSymbol={currentSymbol}
