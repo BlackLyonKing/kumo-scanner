@@ -180,6 +180,18 @@ const EntryTimer = () => {
           ))}
         </div>
 
+        {/* Trade Now Button - Only show when conditions are good */}
+        {(advice.status === "Optimal" || advice.status === "Good") && (
+          <div className="text-center">
+            <button className="w-full py-4 px-6 bg-gradient-to-r from-signal-long to-signal-long/80 text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse">
+              🚀 TRADE NOW - {advice.status.toUpperCase()} CONDITIONS
+            </button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Perfect timing for Ichimoku-based entries
+            </p>
+          </div>
+        )}
+
         {/* Ichimoku Entry Tips */}
         <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
           <h5 className="font-semibold text-foreground mb-2">📈 Ichimoku Entry Guidelines</h5>
