@@ -51,7 +51,9 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
   };
 
   const getTradeButtonConfig = (signal: TradingSignal) => {
-    const phemexUrl = `https://phemex.com/account/referral/invite-friends-entry?referralCode=H2JMW2&symbol=${signal.symbol}`;
+    // Format symbol for Phemex URL (remove any slashes, ensure uppercase)
+    const formattedSymbol = signal.symbol.replace('/', '').replace('-', '').toUpperCase();
+    const phemexUrl = `https://phemex.com/trade/${formattedSymbol}?referralCode=H2JMW2`;
     
     switch (signal.signal) {
       case 'Long Signal':
