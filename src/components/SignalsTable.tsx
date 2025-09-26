@@ -50,6 +50,37 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
     }
   };
 
+  const getTradeButtonConfig = (signal: TradingSignal) => {
+    const phemexUrl = `https://phemex.com/account/referral/invite-friends-entry?referralCode=H2JMW2&symbol=${signal.symbol}`;
+    
+    switch (signal.signal) {
+      case 'Long Signal':
+        return {
+          text: '🚀 LONG NOW',
+          className: 'bg-gradient-to-r from-signal-long to-signal-long/80 hover:from-signal-long/90 hover:to-signal-long/70 text-white shadow-lg hover:shadow-signal-long/20',
+          disabled: false,
+          pulse: signal.signalGrade === 'A',
+          url: phemexUrl
+        };
+      case 'Short Signal':
+        return {
+          text: '📉 SHORT NOW',
+          className: 'bg-gradient-to-r from-signal-short to-signal-short/80 hover:from-signal-short/90 hover:to-signal-short/70 text-white shadow-lg hover:shadow-signal-short/20',
+          disabled: false,
+          pulse: signal.signalGrade === 'A',
+          url: phemexUrl
+        };
+      default:
+        return {
+          text: '⏸️ NO SIGNAL',
+          className: 'bg-muted/20 text-muted-foreground cursor-not-allowed',
+          disabled: true,
+          pulse: false,
+          url: phemexUrl
+        };
+    }
+  };
+
   const playNotificationSound = () => {
     if (soundEnabled) {
       // Create a simple beep sound
@@ -190,6 +221,7 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                     <HelpTooltip content="Signal quality: A = All conditions + multi-timeframe alignment, B = Basic conditions met, C = No signal or conflicting conditions." />
                   </div>
                 </th>
+                <th className="py-4 px-6 font-semibold text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
@@ -300,6 +332,31 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                         {signal.signalGrade}
                       </div>
                       <SignalStrengthIndicator signal={signal} />
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex justify-center">
+                      {(() => {
+                        const config = getTradeButtonConfig(signal);
+                        return (
+                          <Button
+                            size="sm"
+                            disabled={config.disabled}
+                            className={cn(
+                              "min-w-[120px] font-bold text-sm transition-all duration-300 hover:scale-105",
+                              config.className,
+                              config.pulse && "animate-pulse"
+                            )}
+                            onClick={() => {
+                              if (!config.disabled) {
+                                window.open(config.url, '_blank');
+                              }
+                            }}
+                          >
+                            {config.text}
+                          </Button>
+                        );
+                      })()}
                     </div>
                   </td>
                 </tr>
@@ -430,6 +487,31 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Trade Now Button */}
+              <div className="mt-4 pt-4 border-t border-border/50">
+                {(() => {
+                  const config = getTradeButtonConfig(signal);
+                  return (
+                    <Button
+                      size="lg"
+                      disabled={config.disabled}
+                      className={cn(
+                        "w-full font-bold text-base h-12 transition-all duration-300 hover:scale-[1.02]",
+                        config.className,
+                        config.pulse && "animate-pulse"
+                      )}
+                      onClick={() => {
+                        if (!config.disabled) {
+                          window.open(config.url, '_blank');
+                        }
+                      }}
+                    >
+                      {config.text}
+                    </Button>
+                  );
+                })()}
               </div>
             </div>
           ))}
