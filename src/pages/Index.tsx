@@ -31,6 +31,8 @@ import ExportSignals from "@/components/ExportSignals";
 import FAQ from "@/components/FAQ";
 import Testimonials from "@/components/Testimonials";
 import { useSignalAlerts } from "@/hooks/useSignalAlerts";
+import MultiTimeframeDemo from "@/components/MultiTimeframeDemo";
+import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -44,6 +46,7 @@ const Index = () => {
   const [sortBy, setSortBy] = useState("symbol");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [timeframeTrendFilter, setTimeframeTrendFilter] = useState<'bullish' | 'bearish' | 'both'>('both');
   const { toast } = useToast();
 
   // Enable browser notifications for Grade A signals
@@ -52,6 +55,17 @@ const Index = () => {
   // Filter and sort signals
   const filteredAndSortedSignals = useMemo(() => {
     let filtered = signals;
+    
+    // Apply timeframe trend filter
+    if (timeframeTrendFilter !== 'both') {
+      filtered = filtered.filter(signal => {
+        if (timeframeTrendFilter === 'bullish') {
+          return signal.signal === 'Long Signal';
+        } else {
+          return signal.signal === 'Short Signal';
+        }
+      });
+    }
     
     // Apply signal filter
     if (signalFilter !== "all") {
@@ -85,7 +99,7 @@ const Index = () => {
     });
     
     return filtered;
-  }, [signals, signalFilter, gradeFilter, sortBy, sortOrder]);
+  }, [signals, signalFilter, gradeFilter, sortBy, sortOrder, timeframeTrendFilter]);
 
   const scanMarkets = async (scanType: string = 'usdt_only') => {
     setIsScanning(true);
@@ -218,20 +232,35 @@ const Index = () => {
             
             {signals.length > 0 && (
               <>
-                <div className="flex items-center justify-between">
-                  <SignalFilters
-                    signalFilter={signalFilter}
-                    gradeFilter={gradeFilter}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSignalFilterChange={setSignalFilter}
-                    onGradeFilterChange={setGradeFilter}
-                    onSortByChange={setSortBy}
-                    onSortOrderChange={setSortOrder}
-                  />
-                  <ExportSignals signals={filteredAndSortedSignals} />
+                <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-3">
+                    <SignalFilters
+                      signalFilter={signalFilter}
+                      gradeFilter={gradeFilter}
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSignalFilterChange={setSignalFilter}
+                      onGradeFilterChange={setGradeFilter}
+                      onSortByChange={setSortBy}
+                      onSortOrderChange={setSortOrder}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ExportSignals signals={filteredAndSortedSignals} />
+                  </div>
                 </div>
-                <PerformanceStats />
+                
+                <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-3">
+                    <PerformanceStats />
+                  </div>
+                  <div>
+                    <TimeframeTrendFilter 
+                      currentFilter={timeframeTrendFilter}
+                      onFilterChange={setTimeframeTrendFilter}
+                    />
+                  </div>
+                </div>
               </>
             )}
             
@@ -261,6 +290,8 @@ const Index = () => {
           </TabsContent>
           
           <TabsContent value="analysis" className="space-y-4 mt-4">
+            <MultiTimeframeDemo />
+            
             <div className="grid lg:grid-cols-2 gap-4">
               <NotificationSettings />
               <GeminiAnalysis signals={filteredAndSortedSignals} />
