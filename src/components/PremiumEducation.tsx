@@ -277,6 +277,14 @@ const PremiumEducation = () => {
                           <PlayCircle className="h-4 w-4 mr-2" />
                           Start Course
                         </Button>
+                      ) : index === 1 ? (
+                        <Button 
+                          className="flex-1"
+                          onClick={() => navigate('/course/chart-patterns')}
+                        >
+                          <PlayCircle className="h-4 w-4 mr-2" />
+                          Start Course
+                        </Button>
                       ) : (
                         <CryptoPayment 
                           amount={course.price}
