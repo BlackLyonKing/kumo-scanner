@@ -285,6 +285,14 @@ const PremiumEducation = () => {
                           <PlayCircle className="h-4 w-4 mr-2" />
                           Start Course
                         </Button>
+                      ) : index === 2 ? (
+                        <Button 
+                          className="flex-1"
+                          onClick={() => navigate('/course/market-psychology')}
+                        >
+                          <PlayCircle className="h-4 w-4 mr-2" />
+                          Start Course
+                        </Button>
                       ) : (
                         <CryptoPayment 
                           amount={course.price}
