@@ -22,9 +22,10 @@ import ReactMarkdown from 'react-markdown';
 
 interface CourseViewerProps {
   modules: CourseModule[];
+  onLessonChange?: (lessonTitle: string) => void;
 }
 
-const CourseViewer = ({ modules }: CourseViewerProps) => {
+const CourseViewer = ({ modules, onLessonChange }: CourseViewerProps) => {
   const [selectedModule, setSelectedModule] = useState(modules[0]);
   const [selectedLesson, setSelectedLesson] = useState(modules[0].lessons[0]);
   const [expandedModules, setExpandedModules] = useState<string[]>([modules[0].id]);
@@ -44,6 +45,7 @@ const CourseViewer = ({ modules }: CourseViewerProps) => {
   const selectLesson = (module: CourseModule, lesson: CourseLesson) => {
     setSelectedModule(module);
     setSelectedLesson(lesson);
+    onLessonChange?.(lesson.title);
   };
 
   const markComplete = () => {

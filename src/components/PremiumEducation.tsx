@@ -187,7 +187,7 @@ const PremiumEducation = () => {
       date: "April 8-12, 2024",
       price: "0.078 ETH",
       earlyBird: "0.062 ETH",
-      description: "Learn to build and deploy automated trading systems",
+      description: "Learn to build and deploy automated trading systems - Now available as full course!",
       topics: [
         "Python for trading",
         "API integration",
@@ -196,12 +196,13 @@ const PremiumEducation = () => {
         "Portfolio optimization"
       ],
       includes: [
+        "AI-assisted learning",
         "Code templates",
         "Trading bot setup",
         "Live server access",
-        "Ongoing support",
-        "Alumni network access"
-      ]
+        "Ongoing support"
+      ],
+      isCourse: true
     }
   ];
 
@@ -487,16 +488,26 @@ const PremiumEducation = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <CryptoPayment 
-                        amount={masterclass.earlyBird}
-                        title={masterclass.title}
-                        description="Early Bird Workshop Access"
-                      >
-                        <Button>
-                          <Trophy className="h-4 w-4 mr-2" />
-                          Reserve Spot (Early Bird)
+                      {masterclass.isCourse ? (
+                        <Button 
+                          className="flex-1"
+                          onClick={() => navigate('/course/algorithmic-trading')}
+                        >
+                          <PlayCircle className="h-4 w-4 mr-2" />
+                          Start Course Now
                         </Button>
-                      </CryptoPayment>
+                      ) : (
+                        <CryptoPayment 
+                          amount={masterclass.earlyBird}
+                          title={masterclass.title}
+                          description="Early Bird Workshop Access"
+                        >
+                          <Button>
+                            <Trophy className="h-4 w-4 mr-2" />
+                            Reserve Spot (Early Bird)
+                          </Button>
+                        </CryptoPayment>
+                      )}
                       <Button variant="outline">Download Brochure</Button>
                     </div>
                   </CardContent>
