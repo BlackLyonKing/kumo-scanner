@@ -243,6 +243,33 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_items: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          id: string
+          order_index: number | null
+          question: string
+        }
+        Insert: {
+          answer: string
+          category: string
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          question: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          question?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount_sol: number
@@ -416,6 +443,57 @@ export type Database = {
         }
         Relationships: []
       }
+      signal_history: {
+        Row: {
+          blockchain: string
+          closed_at: string | null
+          created_at: string
+          current_price: number | null
+          entry_price: number
+          grade: string
+          ichimoku_data: Json | null
+          id: string
+          pnl_percentage: number | null
+          signal_type: string
+          status: string
+          stop_loss: number | null
+          symbol: string
+          target_price: number | null
+        }
+        Insert: {
+          blockchain?: string
+          closed_at?: string | null
+          created_at?: string
+          current_price?: number | null
+          entry_price: number
+          grade: string
+          ichimoku_data?: Json | null
+          id?: string
+          pnl_percentage?: number | null
+          signal_type: string
+          status?: string
+          stop_loss?: number | null
+          symbol: string
+          target_price?: number | null
+        }
+        Update: {
+          blockchain?: string
+          closed_at?: string | null
+          created_at?: string
+          current_price?: number | null
+          entry_price?: number
+          grade?: string
+          ichimoku_data?: Json | null
+          id?: string
+          pnl_percentage?: number | null
+          signal_type?: string
+          status?: string
+          stop_loss?: number | null
+          symbol?: string
+          target_price?: number | null
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           billing_cycle: string
@@ -443,6 +521,78 @@ export type Database = {
           name?: string
           price_usd?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          avatar_url: string | null
+          comment: string
+          created_at: string
+          display_name: string
+          id: string
+          is_featured: boolean | null
+          rating: number
+          verified_trader: boolean | null
+          wallet_address: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          comment: string
+          created_at?: string
+          display_name: string
+          id?: string
+          is_featured?: boolean | null
+          rating: number
+          verified_trader?: boolean | null
+          wallet_address: string
+        }
+        Update: {
+          avatar_url?: string | null
+          comment?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_featured?: boolean | null
+          rating?: number
+          verified_trader?: boolean | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          email_alerts: string | null
+          id: string
+          min_signal_grade: string | null
+          notifications_enabled: boolean | null
+          preferred_timeframes: string[] | null
+          theme: string | null
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          email_alerts?: string | null
+          id?: string
+          min_signal_grade?: string | null
+          notifications_enabled?: boolean | null
+          preferred_timeframes?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          email_alerts?: string | null
+          id?: string
+          min_signal_grade?: string | null
+          notifications_enabled?: boolean | null
+          preferred_timeframes?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          wallet_address?: string
         }
         Relationships: []
       }
@@ -519,6 +669,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_watchlists: {
+        Row: {
+          added_at: string
+          blockchain: string
+          id: string
+          symbol: string
+          wallet_address: string
+        }
+        Insert: {
+          added_at?: string
+          blockchain?: string
+          id?: string
+          symbol: string
+          wallet_address: string
+        }
+        Update: {
+          added_at?: string
+          blockchain?: string
+          id?: string
+          symbol?: string
+          wallet_address?: string
+        }
+        Relationships: []
       }
       whale_stats: {
         Row: {
