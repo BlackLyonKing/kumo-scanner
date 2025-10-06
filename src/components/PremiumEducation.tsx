@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ import CryptoPayment from './CryptoPayment';
 
 const PremiumEducation = () => {
   const [activeTab, setActiveTab] = useState("courses");
+  const navigate = useNavigate();
 
   const courses = [
     {
@@ -267,16 +269,26 @@ const PremiumEducation = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <CryptoPayment 
-                        amount={course.price}
-                        title={course.title}
-                        description="Premium Trading Course"
-                      >
-                        <Button className="flex-1">
+                      {index === 0 ? (
+                        <Button 
+                          className="flex-1"
+                          onClick={() => navigate('/course/ichimoku-mastery')}
+                        >
                           <PlayCircle className="h-4 w-4 mr-2" />
-                          Enroll Now
+                          Start Course
                         </Button>
-                      </CryptoPayment>
+                      ) : (
+                        <CryptoPayment 
+                          amount={course.price}
+                          title={course.title}
+                          description="Premium Trading Course"
+                        >
+                          <Button className="flex-1">
+                            <PlayCircle className="h-4 w-4 mr-2" />
+                            Enroll Now
+                          </Button>
+                        </CryptoPayment>
+                      )}
                       <Button variant="outline">Preview</Button>
                     </div>
                   </CardContent>
