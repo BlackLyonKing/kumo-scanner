@@ -24,6 +24,13 @@ import GeminiAnalysis from "@/components/GeminiAnalysis";
 import NotificationSettings from "@/components/NotificationSettings";
 import VpnNotice from "@/components/VpnNotice";
 import { MarketData } from "@/components/MarketData";
+import ThemeToggle from "@/components/ThemeToggle";
+import WatchlistManager from "@/components/WatchlistManager";
+import PerformanceStats from "@/components/PerformanceStats";
+import ExportSignals from "@/components/ExportSignals";
+import FAQ from "@/components/FAQ";
+import Testimonials from "@/components/Testimonials";
+import { useSignalAlerts } from "@/hooks/useSignalAlerts";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -36,7 +43,11 @@ const Index = () => {
   const [gradeFilter, setGradeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("symbol");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
   const { toast } = useToast();
+
+  // Enable browser notifications for Grade A signals
+  useSignalAlerts(signals, alertsEnabled);
 
   // Filter and sort signals
   const filteredAndSortedSignals = useMemo(() => {
@@ -166,16 +177,22 @@ const Index = () => {
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 max-w-7xl relative z-10">
-        <TradingHeader />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1">
+            <TradingHeader />
+          </div>
+          <ThemeToggle />
+        </div>
         <VpnNotice />
         <RiskWarning />
         
         <Tabs defaultValue="scanner" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="scanner">Scanner</TabsTrigger>
-            <TabsTrigger value="market">Market Data</TabsTrigger>
+            <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
+            <TabsTrigger value="market">Market</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="education">Education</TabsTrigger>
+            <TabsTrigger value="education">Learn</TabsTrigger>
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-4 mt-4">
@@ -200,16 +217,22 @@ const Index = () => {
             />
             
             {signals.length > 0 && (
-              <SignalFilters
-                signalFilter={signalFilter}
-                gradeFilter={gradeFilter}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSignalFilterChange={setSignalFilter}
-                onGradeFilterChange={setGradeFilter}
-                onSortByChange={setSortBy}
-                onSortOrderChange={setSortOrder}
-              />
+              <>
+                <div className="flex items-center justify-between">
+                  <SignalFilters
+                    signalFilter={signalFilter}
+                    gradeFilter={gradeFilter}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSignalFilterChange={setSignalFilter}
+                    onGradeFilterChange={setGradeFilter}
+                    onSortByChange={setSortBy}
+                    onSortOrderChange={setSortOrder}
+                  />
+                  <ExportSignals signals={filteredAndSortedSignals} />
+                </div>
+                <PerformanceStats />
+              </>
             )}
             
             <SignalsTable 
@@ -217,6 +240,20 @@ const Index = () => {
               isLoading={isScanning && signals.length === 0}
               statusMessage={statusMessage}
             />
+          </TabsContent>
+          
+          <TabsContent value="watchlist" className="space-y-4 mt-4">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <WatchlistManager signals={signals} />
+              <PerformanceStats />
+            </div>
+            {signals.length > 0 && (
+              <SignalsTable 
+                signals={filteredAndSortedSignals.filter(s => s.signal !== 'Neutral')}
+                isLoading={false}
+                statusMessage="Your watchlist signals"
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="market" className="mt-4">
@@ -232,6 +269,8 @@ const Index = () => {
           
           <TabsContent value="education" className="space-y-4 mt-4">
             <IchimokuEducation />
+            <FAQ />
+            <Testimonials />
             <PremiumEducation />
           </TabsContent>
         </Tabs>
