@@ -120,14 +120,7 @@ For crypto trading with Ichimoku, we recommend:
 2. Search for "Ichimoku Cloud" or "Ichimoku Kinko Hyo"
 3. Add to your chart
 
-### Step 2: Optimize Colors
-- Bullish Cloud: Green (#00ff00)
-- Bearish Cloud: Red (#ff0000)
-- Tenkan-sen: Blue (#0000ff)
-- Kijun-sen: Red (#ff0000)
-- Chikou Span: Purple (#800080)
-
-### Step 3: Set Time Periods
+### Step 2: Set Time Periods
 Standard settings work best:
 - Tenkan: 9
 - Kijun: 26
