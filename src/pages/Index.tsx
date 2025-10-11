@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useWallet } from "@/contexts/WalletContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TradingHeader from "@/components/TradingHeader";
 import { SubscriptionGate } from "@/components/SubscriptionGate";
@@ -35,6 +35,7 @@ import ExportSignals from "@/components/ExportSignals";
 import FAQ from "@/components/FAQ";
 import Testimonials from "@/components/Testimonials";
 import { useSignalAlerts } from "@/hooks/useSignalAlerts";
+import { useWalletTrial } from "@/hooks/useWalletTrial";
 import MultiTimeframeDemo from "@/components/MultiTimeframeDemo";
 import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
 
@@ -54,16 +55,18 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { subscription, loading: subLoading } = useSubscription();
+  const { isConnected } = useWallet();
 
-  // Check authentication
+  // Check wallet connection
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate('/auth');
-      }
-    });
-  }, [navigate]);
+    if (!isConnected) {
+      navigate('/auth');
+    }
+  }, [isConnected, navigate]);
 
+  // Initialize wallet trial for new users
+  useWalletTrial();
+  
   // Enable browser notifications for Grade A signals
   useSignalAlerts(signals, alertsEnabled);
 

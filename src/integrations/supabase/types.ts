@@ -809,6 +809,7 @@ export type Database = {
           trial_start_date: string | null
           updated_at: string
           user_id: string
+          wallet_address: string | null
         }
         Insert: {
           created_at?: string
@@ -823,6 +824,7 @@ export type Database = {
           trial_start_date?: string | null
           updated_at?: string
           user_id: string
+          wallet_address?: string | null
         }
         Update: {
           created_at?: string
@@ -837,6 +839,7 @@ export type Database = {
           trial_start_date?: string | null
           updated_at?: string
           user_id?: string
+          wallet_address?: string | null
         }
         Relationships: [
           {
@@ -989,6 +992,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_wallet_trial: {
+        Args: { wallet_addr: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/contexts/WalletContext';
 
 export interface SubscriptionStatus {
   isActive: boolean;
@@ -20,12 +21,11 @@ export const useSubscription = () => {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { wallet } = useWallet();
 
   const checkSubscription = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      if (!wallet?.address) {
         setSubscription({
           isActive: false,
           isTrial: false,
@@ -42,7 +42,7 @@ export const useSubscription = () => {
           *,
           subscription_plans(name, features)
         `)
-        .eq('user_id', user.id)
+        .eq('wallet_address', wallet.address)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -107,16 +107,8 @@ export const useSubscription = () => {
 
   useEffect(() => {
     checkSubscription();
-
-    // Listen for auth changes
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(() => {
-      checkSubscription();
-    });
-
-    return () => {
-      authSub.unsubscribe();
-    };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet?.address]);
 
   return { subscription, loading, refetch: checkSubscription };
 };
