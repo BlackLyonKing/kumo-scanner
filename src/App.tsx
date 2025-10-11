@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WalletProvider } from "@/contexts/WalletContext";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Subscribe from "./pages/Subscribe";
 import CoursePage from "./pages/CoursePage";
 import ChartPatternsCoursePage from "./pages/ChartPatternsCoursePage";
 import MarketPsychologyCoursePage from "./pages/MarketPsychologyCoursePage";
@@ -23,6 +25,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/course/ichimoku-mastery" element={<CoursePage />} />
             <Route path="/course/chart-patterns" element={<ChartPatternsCoursePage />} />
             <Route path="/course/market-psychology" element={<MarketPsychologyCoursePage />} />

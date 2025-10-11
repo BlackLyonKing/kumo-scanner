@@ -1,7 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TradingHeader from "@/components/TradingHeader";
+import { SubscriptionGate } from "@/components/SubscriptionGate";
+import { useSubscription } from "@/hooks/useSubscription";
 import RiskWarning from "@/components/RiskWarning";
 import ScanControls from "@/components/ScanControls";
 import SignalsTable from "@/components/SignalsTable";
@@ -48,6 +52,17 @@ const Index = () => {
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [timeframeTrendFilter, setTimeframeTrendFilter] = useState<'bullish' | 'bearish' | 'both'>('both');
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { subscription, loading: subLoading } = useSubscription();
+
+  // Check authentication
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+  }, [navigate]);
 
   // Enable browser notifications for Grade A signals
   useSignalAlerts(signals, alertsEnabled);
@@ -210,65 +225,67 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-4 mt-4">
-            <div className="grid lg:grid-cols-3 gap-4 mb-4">
-              <div className="lg:col-span-2">
-                <ScanControls 
-                  onScan={scanMarkets}
-                  isScanning={isScanning}
-                  lastUpdated={lastUpdated}
-                />
-              </div>
-              <div>
-                <EntryTimer />
-              </div>
-            </div>
-            
-            <ScanProgress 
-              currentSymbol={currentSymbol}
-              progress={scanProgress}
-              totalSymbols={SYMBOLS.length}
-              isVisible={isScanning}
-            />
-            
-            {signals.length > 0 && (
-              <>
-                <div className="grid lg:grid-cols-4 gap-4">
-                  <div className="lg:col-span-3">
-                    <SignalFilters
-                      signalFilter={signalFilter}
-                      gradeFilter={gradeFilter}
-                      sortBy={sortBy}
-                      sortOrder={sortOrder}
-                      onSignalFilterChange={setSignalFilter}
-                      onGradeFilterChange={setGradeFilter}
-                      onSortByChange={setSortBy}
-                      onSortOrderChange={setSortOrder}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ExportSignals signals={filteredAndSortedSignals} />
-                  </div>
+            <SubscriptionGate feature="the Premium Scanner">
+              <div className="grid lg:grid-cols-3 gap-4 mb-4">
+                <div className="lg:col-span-2">
+                  <ScanControls 
+                    onScan={scanMarkets}
+                    isScanning={isScanning}
+                    lastUpdated={lastUpdated}
+                  />
                 </div>
-                
-                <div className="grid lg:grid-cols-4 gap-4">
-                  <div className="lg:col-span-3">
-                    <PerformanceStats />
-                  </div>
-                  <div>
-                    <TimeframeTrendFilter 
-                      currentFilter={timeframeTrendFilter}
-                      onFilterChange={setTimeframeTrendFilter}
-                    />
-                  </div>
+                <div>
+                  <EntryTimer />
                 </div>
-              </>
-            )}
+              </div>
+              
+              <ScanProgress 
+                currentSymbol={currentSymbol}
+                progress={scanProgress}
+                totalSymbols={SYMBOLS.length}
+                isVisible={isScanning}
+              />
+              
+              {signals.length > 0 && (
+                <>
+                  <div className="grid lg:grid-cols-4 gap-4">
+                    <div className="lg:col-span-3">
+                      <SignalFilters
+                        signalFilter={signalFilter}
+                        gradeFilter={gradeFilter}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSignalFilterChange={setSignalFilter}
+                        onGradeFilterChange={setGradeFilter}
+                        onSortByChange={setSortBy}
+                        onSortOrderChange={setSortOrder}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ExportSignals signals={filteredAndSortedSignals} />
+                    </div>
+                  </div>
+                  
+                  <div className="grid lg:grid-cols-4 gap-4">
+                    <div className="lg:col-span-3">
+                      <PerformanceStats />
+                    </div>
+                    <div>
+                      <TimeframeTrendFilter 
+                        currentFilter={timeframeTrendFilter}
+                        onFilterChange={setTimeframeTrendFilter}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             
             <SignalsTable 
               signals={filteredAndSortedSignals}
               isLoading={isScanning && signals.length === 0}
               statusMessage={statusMessage}
             />
+            </SubscriptionGate>
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-4 mt-4">

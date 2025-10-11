@@ -243,6 +243,47 @@ export type Database = {
         }
         Relationships: []
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          product_id: string | null
+          read: boolean
+          receiver_wallet: string
+          sender_wallet: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          read?: boolean
+          receiver_wallet: string
+          sender_wallet: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          read?: boolean
+          receiver_wallet?: string
+          sender_wallet?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_items: {
         Row: {
           answer: string
@@ -269,6 +310,89 @@ export type Database = {
           question?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          wallet_address: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          wallet_address: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          amount_sol: number
+          buyer_wallet: string
+          created_at: string
+          expires_at: string
+          id: string
+          message: string | null
+          product_id: string
+          seller_wallet: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_sol: number
+          buyer_wallet: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          message?: string | null
+          product_id: string
+          seller_wallet: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_sol?: number
+          buyer_wallet?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          message?: string | null
+          product_id?: string
+          seller_wallet?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -442,6 +566,60 @@ export type Database = {
           wallet_address?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          product_id: string
+          rating: number
+          reviewer_wallet: string
+          seller_wallet: string
+          updated_at: string
+          verified_purchase: boolean
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id: string
+          rating: number
+          reviewer_wallet: string
+          seller_wallet: string
+          updated_at?: string
+          verified_purchase?: boolean
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string
+          rating?: number
+          reviewer_wallet?: string
+          seller_wallet?: string
+          updated_at?: string
+          verified_purchase?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signal_history: {
         Row: {
