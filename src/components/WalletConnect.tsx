@@ -148,9 +148,6 @@ const WalletConnect: React.FC = () => {
           
           <div className="text-xs text-muted-foreground text-center mt-4">
             <p>By connecting your wallet, you agree to our Terms of Service</p>
-            <p className="mt-1">
-              <strong>Note:</strong> For WalletConnect, you'll need to add your project ID in the wallet context
-            </p>
           </div>
         </div>
       </DialogContent>

@@ -35,11 +35,6 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
     installed: typeof window !== 'undefined' && Boolean(window.ethereum?.isMetaMask),
   },
   {
-    name: 'WalletConnect',
-    icon: '🔗',
-    installed: true,
-  },
-  {
     name: 'Coinbase',
     icon: '🟦',
     installed: typeof window !== 'undefined' && Boolean(window.ethereum?.isCoinbaseWallet),

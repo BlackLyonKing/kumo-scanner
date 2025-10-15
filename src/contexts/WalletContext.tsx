@@ -6,7 +6,8 @@ import { toast } from '@/hooks/use-toast';
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-const WC_PROJECT_ID = 'your-walletconnect-project-id'; // Users will need to replace this
+// WalletConnect project ID - get from https://cloud.walletconnect.com
+const WC_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
 
 interface WalletProviderProps {
   children: ReactNode;
@@ -42,7 +43,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
       switch (walletName) {
         case 'MetaMask':
-          if (!window.ethereum) {
+          if (!window.ethereum || !window.ethereum.isMetaMask) {
+            window.open('https://metamask.io/download/', '_blank');
             toast({
               title: "MetaMask not found",
               description: "Please install MetaMask browser extension",
@@ -51,12 +53,24 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
             return;
           }
           
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          if (!accounts || accounts.length === 0) {
+            throw new Error('No accounts found');
+          }
           walletProvider = new ethers.BrowserProvider(window.ethereum);
           signer = await walletProvider.getSigner();
           break;
 
         case 'WalletConnect':
+          if (!WC_PROJECT_ID) {
+            toast({
+              title: "WalletConnect not configured",
+              description: "Please configure WalletConnect project ID",
+              variant: "destructive",
+            });
+            return;
+          }
+          
           const wcProvider = await EthereumProvider.init({
             projectId: WC_PROJECT_ID,
             chains: [SupportedChains.ETHEREUM],
@@ -71,6 +85,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
         case 'Coinbase':
           if (!window.ethereum?.isCoinbaseWallet) {
+            window.open('https://www.coinbase.com/wallet/downloads', '_blank');
             toast({
               title: "Coinbase Wallet not found",
               description: "Please install Coinbase Wallet browser extension",
@@ -79,7 +94,10 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
             return;
           }
           
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const cbAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          if (!cbAccounts || cbAccounts.length === 0) {
+            throw new Error('No accounts found');
+          }
           walletProvider = new ethers.BrowserProvider(window.ethereum);
           signer = await walletProvider.getSigner();
           break;
