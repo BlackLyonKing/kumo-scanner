@@ -83,6 +83,25 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           setProvider(wcProvider);
           break;
 
+        case 'Phantom':
+          if (!(window as any).phantom?.ethereum) {
+            window.open('https://phantom.app/download', '_blank');
+            toast({
+              title: "Phantom Wallet not found",
+              description: "Please install Phantom Wallet browser extension",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          const phantomAccounts = await (window as any).phantom.ethereum.request({ method: 'eth_requestAccounts' });
+          if (!phantomAccounts || phantomAccounts.length === 0) {
+            throw new Error('No accounts found');
+          }
+          walletProvider = new ethers.BrowserProvider((window as any).phantom.ethereum);
+          signer = await walletProvider.getSigner();
+          break;
+
         case 'Coinbase':
           if (!window.ethereum?.isCoinbaseWallet) {
             window.open('https://www.coinbase.com/wallet/downloads', '_blank');

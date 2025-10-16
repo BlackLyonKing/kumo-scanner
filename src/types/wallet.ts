@@ -32,17 +32,25 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
   {
     name: 'MetaMask',
     icon: '🦊',
-    installed: typeof window !== 'undefined' && Boolean(window.ethereum?.isMetaMask),
+    installed: typeof window !== 'undefined' && Boolean((window as any).ethereum?.isMetaMask),
+  },
+  {
+    name: 'Phantom',
+    icon: '👻',
+    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.ethereum),
   },
   {
     name: 'Coinbase',
     icon: '🟦',
-    installed: typeof window !== 'undefined' && Boolean(window.ethereum?.isCoinbaseWallet),
+    installed: typeof window !== 'undefined' && Boolean((window as any).ethereum?.isCoinbaseWallet),
   },
 ];
 
 declare global {
   interface Window {
     ethereum?: any;
+    phantom?: {
+      ethereum?: any;
+    };
   }
 }
