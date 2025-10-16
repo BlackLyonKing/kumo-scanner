@@ -39,7 +39,10 @@ const WalletConnect: React.FC = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const getChainName = (chainId: number) => {
+  const getChainName = (chainId: number | string) => {
+    if (typeof chainId === 'string') {
+      return chainId === 'solana-mainnet' ? 'Solana' : chainId;
+    }
     switch (chainId) {
       case SupportedChains.ETHEREUM: return 'Ethereum';
       case SupportedChains.POLYGON: return 'Polygon';
@@ -82,7 +85,9 @@ const WalletConnect: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Balance</span>
-                  <span className="font-mono text-sm">{parseFloat(wallet.balance).toFixed(4)} ETH</span>
+                  <span className="font-mono text-sm">
+                    {parseFloat(wallet.balance).toFixed(4)} {wallet.chain === 'solana' ? 'SOL' : 'ETH'}
+                  </span>
                 </div>
               </CardContent>
             </Card>

@@ -3,13 +3,15 @@ export interface WalletInfo {
   icon: string;
   installed?: boolean;
   deepLink?: string;
+  chain?: 'ethereum' | 'solana';
 }
 
 export interface ConnectedWallet {
   address: string;
-  chainId: number;
+  chainId: number | string;
   balance: string;
   walletName: string;
+  chain: 'ethereum' | 'solana';
 }
 
 export interface WalletContextType {
@@ -33,16 +35,19 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
     name: 'MetaMask',
     icon: '🦊',
     installed: typeof window !== 'undefined' && Boolean((window as any).ethereum?.isMetaMask),
+    chain: 'ethereum',
   },
   {
     name: 'Phantom',
     icon: '👻',
-    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.ethereum?.isPhantom),
+    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.solana?.isPhantom),
+    chain: 'solana',
   },
   {
     name: 'Coinbase',
     icon: '🟦',
     installed: typeof window !== 'undefined' && Boolean((window as any).ethereum?.isCoinbaseWallet),
+    chain: 'ethereum',
   },
 ];
 
@@ -51,6 +56,8 @@ declare global {
     ethereum?: any;
     phantom?: {
       ethereum?: any;
+      solana?: any;
     };
+    solana?: any;
   }
 }

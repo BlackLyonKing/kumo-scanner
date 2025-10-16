@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { EthereumProvider } from '@walletconnect/ethereum-provider';
 import { WalletContextType, ConnectedWallet, SupportedChains } from '@/types/wallet';
 import { toast } from '@/hooks/use-toast';
@@ -84,7 +85,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           break;
 
         case 'Phantom':
-          if (!(window as any).phantom?.ethereum?.isPhantom) {
+          if (!(window as any).phantom?.solana?.isPhantom) {
             window.open('https://phantom.app/download', '_blank');
             toast({
               title: "Phantom Wallet not found",
@@ -94,13 +95,32 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
             return;
           }
           
-          const phantomAccounts = await (window as any).phantom.ethereum.request({ method: 'eth_requestAccounts' });
-          if (!phantomAccounts || phantomAccounts.length === 0) {
-            throw new Error('No accounts found');
-          }
-          walletProvider = new ethers.BrowserProvider((window as any).phantom.ethereum);
-          signer = await walletProvider.getSigner();
-          break;
+          const phantomProvider = (window as any).phantom.solana;
+          const resp = await phantomProvider.connect();
+          
+          // Get Solana balance
+          const connection = new Connection('https://api.mainnet-beta.solana.com');
+          const publicKey = new PublicKey(resp.publicKey.toString());
+          const solBalance = await connection.getBalance(publicKey);
+          
+          const walletData: ConnectedWallet = {
+            address: resp.publicKey.toString(),
+            chainId: 'solana-mainnet',
+            balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+            walletName,
+            chain: 'solana',
+          };
+
+          setWallet(walletData);
+          setIsConnected(true);
+          setProvider(phantomProvider);
+          localStorage.setItem('connectedWallet', JSON.stringify(walletData));
+
+          toast({
+            title: "Wallet Connected",
+            description: `Connected to ${walletName}`,
+          });
+          return;
 
         case 'Coinbase':
           if (!window.ethereum?.isCoinbaseWallet) {
@@ -134,6 +154,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         chainId: Number(network.chainId),
         balance: ethers.formatEther(balance),
         walletName,
+        chain: 'ethereum',
       };
 
       setWallet(walletData);
@@ -155,7 +176,16 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
 
-  const disconnect = () => {
+  const disconnect = async () => {
+    // Disconnect Phantom Solana if connected
+    if (wallet?.chain === 'solana' && (window as any).phantom?.solana) {
+      try {
+        await (window as any).phantom.solana.disconnect();
+      } catch (error) {
+        console.error('Error disconnecting Phantom:', error);
+      }
+    }
+    
     setWallet(null);
     setIsConnected(false);
     setProvider(null);
@@ -198,6 +228,14 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
 
     try {
+      // Handle Solana wallet signing
+      if (wallet?.chain === 'solana' && (window as any).phantom?.solana) {
+        const encodedMessage = new TextEncoder().encode(message);
+        const signedMessage = await (window as any).phantom.solana.signMessage(encodedMessage, 'utf8');
+        return Buffer.from(signedMessage.signature).toString('hex');
+      }
+      
+      // Handle Ethereum wallet signing
       const walletProvider = provider || new ethers.BrowserProvider(window.ethereum);
       const signer = await walletProvider.getSigner();
       return await signer.signMessage(message);

@@ -5,7 +5,9 @@ declare global {
     ethereum?: any;
     phantom?: {
       ethereum?: any;
+      solana?: any;
     };
+    solana?: any;
   }
 }
 
