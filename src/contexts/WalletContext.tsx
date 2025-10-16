@@ -84,7 +84,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           break;
 
         case 'Phantom':
-          if (!(window as any).phantom?.ethereum) {
+          if (!(window as any).phantom?.ethereum?.isPhantom) {
             window.open('https://phantom.app/download', '_blank');
             toast({
               title: "Phantom Wallet not found",

@@ -37,7 +37,7 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
   {
     name: 'Phantom',
     icon: '👻',
-    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.ethereum),
+    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.ethereum?.isPhantom),
   },
   {
     name: 'Coinbase',
