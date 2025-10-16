@@ -808,7 +808,7 @@ export type Database = {
           trial_end_date: string | null
           trial_start_date: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
           wallet_address: string | null
         }
         Insert: {
@@ -823,7 +823,7 @@ export type Database = {
           trial_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           wallet_address?: string | null
         }
         Update: {
@@ -838,7 +838,7 @@ export type Database = {
           trial_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           wallet_address?: string | null
         }
         Relationships: [
