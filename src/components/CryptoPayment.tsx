@@ -56,10 +56,14 @@ const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, descriptio
 
   const generateQRUrl = (address: string, amount: string, crypto: string) => {
     switch (crypto) {
-      case 'ETH':
-        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ethereum:${address}?value=${(usdAmount * CRYPTO_RATES.USD_TO_ETH).toFixed(4)}`;
+      case 'ETH': {
+        const ethAmount = usdAmount * CRYPTO_RATES.USD_TO_ETH;
+        const ethStr = ethAmount.toFixed(18); // 18 decimals for wei precision
+        const weiStr = ethStr.replace('.', ''); // convert to integer wei string
+        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ethereum:${address}?value=${weiStr}`;
+      }
       case 'BTC':
-        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:${address}?amount=${(usdAmount * CRYPTO_RATES.USD_TO_BTC).toFixed(6)}`;
+        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:${address}?amount=${(usdAmount * CRYPTO_RATES.USD_TO_BTC).toFixed(8)}`;
       case 'SOL':
         return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${address}`;
       default:
