@@ -8,7 +8,7 @@ import { Copy, QrCode, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface CryptoPaymentProps {
-  amount: string; // ETH amount like "0.0045 ETH"
+  amount: string; // USD amount like "12"
   title: string;
   description: string;
   children: React.ReactNode;
@@ -20,26 +20,27 @@ const WALLET_ADDRESSES = {
   SOL: '9nt3BzBV3qu2w94ytpsARgQAuTJQRyNpYsCz58mmzH1E'
 };
 
-// Approximate conversion rates (in production, you'd fetch real-time rates)
+// Approximate conversion rates from USD (in production, you'd fetch real-time rates)
 const CRYPTO_RATES = {
-  ETH_TO_BTC: 0.037, // 1 ETH ≈ 0.037 BTC
-  ETH_TO_SOL: 14.5   // 1 ETH ≈ 14.5 SOL
+  USD_TO_ETH: 0.00041,  // $1 ≈ 0.00041 ETH (~$2450/ETH)
+  USD_TO_BTC: 0.000015, // $1 ≈ 0.000015 BTC (~$67000/BTC)
+  USD_TO_SOL: 0.0059    // $1 ≈ 0.0059 SOL (~$170/SOL)
 };
 
 const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, description, children }) => {
   const [selectedCrypto, setSelectedCrypto] = useState<'ETH' | 'BTC' | 'SOL'>('ETH');
   const [isOpen, setIsOpen] = useState(false);
 
-  const ethAmount = parseFloat(amount.replace(' ETH', ''));
+  const usdAmount = parseFloat(amount);
   
   const getAmount = (crypto: 'ETH' | 'BTC' | 'SOL') => {
     switch (crypto) {
       case 'ETH':
-        return `${ethAmount.toFixed(4)} ETH`;
+        return `${(usdAmount * CRYPTO_RATES.USD_TO_ETH).toFixed(4)} ETH`;
       case 'BTC':
-        return `${(ethAmount * CRYPTO_RATES.ETH_TO_BTC).toFixed(6)} BTC`;
+        return `${(usdAmount * CRYPTO_RATES.USD_TO_BTC).toFixed(6)} BTC`;
       case 'SOL':
-        return `${(ethAmount * CRYPTO_RATES.ETH_TO_SOL).toFixed(2)} SOL`;
+        return `${(usdAmount * CRYPTO_RATES.USD_TO_SOL).toFixed(2)} SOL`;
       default:
         return amount;
     }
@@ -56,9 +57,9 @@ const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, descriptio
   const generateQRUrl = (address: string, amount: string, crypto: string) => {
     switch (crypto) {
       case 'ETH':
-        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ethereum:${address}?value=${ethAmount}`;
+        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ethereum:${address}?value=${(usdAmount * CRYPTO_RATES.USD_TO_ETH).toFixed(4)}`;
       case 'BTC':
-        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:${address}?amount=${(ethAmount * CRYPTO_RATES.ETH_TO_BTC).toFixed(6)}`;
+        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:${address}?amount=${(usdAmount * CRYPTO_RATES.USD_TO_BTC).toFixed(6)}`;
       case 'SOL':
         return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${address}`;
       default:
@@ -101,6 +102,7 @@ const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, descriptio
 
           <Card>
             <CardHeader className="text-center pb-3">
+              <div className="text-sm text-muted-foreground mb-1">${usdAmount} USD</div>
               <CardTitle className="text-2xl font-bold">
                 {getAmount(selectedCrypto)}
               </CardTitle>
