@@ -2,7 +2,8 @@
 ALTER TABLE public.user_subscriptions 
 ALTER COLUMN user_id DROP NOT NULL;
 
--- Grant permanent access to wallet 6jd9pZqayL2TjfgmjWvN6GpUKuqv8BuaMkhctmBxBZs9
+-- Grant permanent access to wallet 6jd9pZqayL2TjfgmjWvN6GpUKuqv8BuaMkhctmBxBZs9,
+  Br5s6YVrJoo5NGHqMXAeD2sEUQUUv9rEjaDVk2nq4pxx
 DO $$
 DECLARE
   default_plan_id UUID;
