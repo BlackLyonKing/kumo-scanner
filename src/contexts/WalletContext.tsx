@@ -85,7 +85,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           break;
 
         case 'Phantom':
-          if (!(window as any).phantom?.solana?.isPhantom) {
+          if (!window.phantom?.solana) {
             window.open('https://phantom.app/download', '_blank');
             toast({
               title: "Phantom Wallet not found",
@@ -95,31 +95,71 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
             return;
           }
           
-          const phantomProvider = (window as any).phantom.solana;
-          const resp = await phantomProvider.connect();
+          const phantomProvider = window.phantom.solana;
           
-          // Get Solana balance
-          const connection = new Connection('https://api.mainnet-beta.solana.com');
-          const publicKey = new PublicKey(resp.publicKey.toString());
-          const solBalance = await connection.getBalance(publicKey);
-          
-          const walletData: ConnectedWallet = {
-            address: resp.publicKey.toString(),
-            chainId: 'solana-mainnet',
-            balance: (solBalance / LAMPORTS_PER_SOL).toString(),
-            walletName,
-            chain: 'solana',
-          };
+          // Only connect if not already connected
+          if (!phantomProvider.isConnected) {
+            try {
+              const resp = await phantomProvider.connect({ onlyIfTrusted: false });
+              
+              // Get Solana balance
+              const connection = new Connection('https://api.mainnet-beta.solana.com');
+              const publicKey = new PublicKey(resp.publicKey.toString());
+              const solBalance = await connection.getBalance(publicKey);
+              
+              const walletData: ConnectedWallet = {
+                address: resp.publicKey.toString(),
+                chainId: 'solana-mainnet',
+                balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+                walletName,
+                chain: 'solana',
+              };
 
-          setWallet(walletData);
-          setIsConnected(true);
-          setProvider(phantomProvider);
-          localStorage.setItem('connectedWallet', JSON.stringify(walletData));
+              setWallet(walletData);
+              setIsConnected(true);
+              setProvider(phantomProvider);
+              localStorage.setItem('connectedWallet', JSON.stringify(walletData));
 
-          toast({
-            title: "Wallet Connected",
-            description: `Connected to ${walletName}`,
-          });
+              toast({
+                title: "Wallet Connected",
+                description: `Connected to ${walletName}`,
+              });
+            } catch (err: any) {
+              // User rejected the connection
+              if (err.code === 4001) {
+                toast({
+                  title: "Connection Rejected",
+                  description: "You rejected the connection request",
+                  variant: "destructive",
+                });
+              } else {
+                throw err;
+              }
+            }
+          } else {
+            // Already connected, get existing connection
+            const publicKey = phantomProvider.publicKey;
+            const connection = new Connection('https://api.mainnet-beta.solana.com');
+            const solBalance = await connection.getBalance(publicKey);
+            
+            const walletData: ConnectedWallet = {
+              address: publicKey.toString(),
+              chainId: 'solana-mainnet',
+              balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+              walletName,
+              chain: 'solana',
+            };
+
+            setWallet(walletData);
+            setIsConnected(true);
+            setProvider(phantomProvider);
+            localStorage.setItem('connectedWallet', JSON.stringify(walletData));
+
+            toast({
+              title: "Wallet Connected",
+              description: `Connected to ${walletName}`,
+            });
+          }
           return;
 
         case 'Coinbase':

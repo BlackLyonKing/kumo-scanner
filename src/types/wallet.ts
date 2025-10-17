@@ -40,7 +40,7 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
   {
     name: 'Phantom',
     icon: '👻',
-    installed: typeof window !== 'undefined' && Boolean((window as any).phantom?.solana?.isPhantom),
+    installed: typeof window !== 'undefined' && Boolean(window.phantom?.solana),
     chain: 'solana',
   },
   {
