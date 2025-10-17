@@ -103,7 +103,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
               const resp = await phantomProvider.connect({ onlyIfTrusted: false });
               
               // Get Solana balance using a public RPC endpoint that allows browser requests
-              const connection = new Connection('https://rpc.ankr.com/solana');
+              const connection = new Connection('https://solana-rpc.publicnode.com');
               const publicKey = new PublicKey(resp.publicKey.toString());
               const solBalance = await connection.getBalance(publicKey);
               
@@ -139,7 +139,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           } else {
             // Already connected, get existing connection
             const publicKey = phantomProvider.publicKey;
-            const connection = new Connection('https://rpc.ankr.com/solana');
+            const connection = new Connection('https://solana-rpc.publicnode.com');
             const solBalance = await connection.getBalance(publicKey);
             
             const walletData: ConnectedWallet = {
