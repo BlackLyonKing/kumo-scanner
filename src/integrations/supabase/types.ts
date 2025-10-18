@@ -462,6 +462,30 @@ export type Database = {
           },
         ]
       }
+      permanent_access_grants: {
+        Row: {
+          granted_at: string
+          granted_by_wallet: string
+          id: string
+          notes: string | null
+          wallet_address: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by_wallet: string
+          id?: string
+          notes?: string | null
+          wallet_address: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by_wallet?: string
+          id?: string
+          notes?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           brand: string | null
@@ -779,19 +803,22 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          user_id: string | null
+          wallet_address: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Relationships: []
       }
@@ -997,10 +1024,12 @@ export type Database = {
         Returns: string
       }
       has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
+        Args:
+          | { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
+          | {
+              _role: Database["public"]["Enums"]["app_role"]
+              _wallet_address: string
+            }
         Returns: boolean
       }
     }

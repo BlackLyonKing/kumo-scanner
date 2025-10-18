@@ -38,6 +38,8 @@ import { useSignalAlerts } from "@/hooks/useSignalAlerts";
 import { useWalletTrial } from "@/hooks/useWalletTrial";
 import MultiTimeframeDemo from "@/components/MultiTimeframeDemo";
 import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
+import { AdminPanel } from "@/components/AdminPanel";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -56,6 +58,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { subscription, loading: subLoading } = useSubscription();
   const { isConnected } = useWallet();
+  const { isAdmin } = useAdminRole();
 
   // Check wallet connection
   useEffect(() => {
@@ -219,12 +222,13 @@ const Index = () => {
         <RiskWarning />
         
         <Tabs defaultValue="scanner" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'}`}>
             <TabsTrigger value="scanner">Scanner</TabsTrigger>
             <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
             <TabsTrigger value="market">Market</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
             <TabsTrigger value="education">Learn</TabsTrigger>
+            {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-4 mt-4">
@@ -324,6 +328,12 @@ const Index = () => {
             <Testimonials />
             <PremiumEducation />
           </TabsContent>
+          
+          {isAdmin && (
+            <TabsContent value="admin" className="space-y-4 mt-4">
+              <AdminPanel />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
