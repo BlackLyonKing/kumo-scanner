@@ -133,51 +133,69 @@ const Index = () => {
       const symbolsToScan = await getTradingSymbols(SCAN_PRESETS[scanType as keyof typeof SCAN_PRESETS]);
       
       if (symbolsToScan.length === 0) {
-        throw new Error('No symbols available to scan');
+        throw new Error('No symbols available to scan. Please try a different scan type or check your internet connection.');
       }
 
-      setStatusMessage(`Fetching historical data for ${symbolsToScan.length} symbols...`);
+      setStatusMessage(`Processing ${symbolsToScan.length} symbols...`);
       
-      // Fetch all data concurrently for better performance
-      const promises = symbolsToScan.map(async (symbol, index) => {
-        setCurrentSymbol(symbol);
-        setScanProgress((index / symbolsToScan.length) * 50);
-        
-        const dailyData = await fetchHistoricalData(symbol, '1d');
-        const fourHourData = await fetchHistoricalData(symbol, '4h');
-        return { symbol, dailyData, fourHourData };
-      });
-
-      const fetchedData = await Promise.all(promises);
-      setStatusMessage('Analyzing and grading signals...');
-
-      // Process fetched data
+      // Process in batches to avoid overwhelming APIs
+      const BATCH_SIZE = 5;
       const results: TradingSignal[] = [];
+      let processedCount = 0;
       
-      fetchedData.forEach(({ symbol, dailyData, fourHourData }, index) => {
-        setScanProgress(50 + (index / fetchedData.length) * 50);
+      for (let i = 0; i < symbolsToScan.length; i += BATCH_SIZE) {
+        const batch = symbolsToScan.slice(i, i + BATCH_SIZE);
         
-        if (!dailyData || !fourHourData) {
-          return;
-        }
+        // Process batch concurrently
+        const batchPromises = batch.map(async (symbol) => {
+          try {
+            setCurrentSymbol(symbol);
+            
+            const dailyData = await fetchHistoricalData(symbol, '1d');
+            const fourHourData = await fetchHistoricalData(symbol, '4h');
+            
+            if (!dailyData || !fourHourData) {
+              console.warn(`Skipping ${symbol} - insufficient data`);
+              return null;
+            }
 
-        const dailyIchimoku = calculateIchimokuAndRSI(dailyData);
-        const fourHourIchimoku = calculateIchimokuAndRSI(fourHourData);
-        const enhancedSignal = generateTradingSignal(
-          symbol, 
-          dailyIchimoku, 
-          fourHourIchimoku,
-          Math.random() * 10 - 5, // Mock 24h price change
-          Math.random() * 1000000 // Mock volume
-        );
+            const dailyIchimoku = calculateIchimokuAndRSI(dailyData);
+            const fourHourIchimoku = calculateIchimokuAndRSI(fourHourData);
+            const enhancedSignal = generateTradingSignal(
+              symbol, 
+              dailyIchimoku, 
+              fourHourIchimoku,
+              Math.random() * 10 - 5,
+              Math.random() * 1000000
+            );
+            
+            return enhancedSignal;
+          } catch (error) {
+            console.error(`Error processing ${symbol}:`, error);
+            return null;
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
         
-        // Send notification for Grade A signals
-        if (enhancedSignal.signalGrade === 'A') {
-          sendNotification(enhancedSignal.symbol, enhancedSignal.signal);
-        }
+        // Add successful results
+        batchResults.forEach(signal => {
+          if (signal) {
+            results.push(signal);
+            if (signal.signalGrade === 'A') {
+              sendNotification(signal.symbol, signal.signal);
+            }
+          }
+        });
         
-        results.push(enhancedSignal);
-      });
+        processedCount += batch.length;
+        setScanProgress((processedCount / symbolsToScan.length) * 100);
+        setStatusMessage(`Processed ${processedCount}/${symbolsToScan.length} symbols...`);
+      }
+      
+      if (results.length === 0) {
+        throw new Error('No valid signals generated. Please try again.');
+      }
       
       setScanProgress(100);
       setSignals(results);
@@ -195,10 +213,11 @@ const Index = () => {
       
     } catch (error) {
       console.error('Scanning error:', error);
-      setStatusMessage('Error scanning markets. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setStatusMessage('');
       toast({
         title: "Scan Failed ❌",
-        description: "Unable to fetch market data. Please check your connection and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

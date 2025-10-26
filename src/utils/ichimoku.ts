@@ -22,7 +22,7 @@ const withProxy = (url: string) => `${CORS_PROXY}${encodeURIComponent(url)}`;
 // Rate limiting for API calls
 class RateLimiter {
   private lastCallTime = 0;
-  private minInterval = 100; // 100ms between calls
+  private minInterval = 300; // 300ms between calls (more conservative)
   
   async throttle(): Promise<void> {
     const now = Date.now();
