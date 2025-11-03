@@ -90,6 +90,16 @@ serve(async (req) => {
           name: '🎲 RSI',
           value: signalData.rsi.toFixed(2),
           inline: true
+        },
+        {
+          name: '\u200B',
+          value: '\u200B',
+          inline: false
+        },
+        {
+          name: '⭐ Want Grade A Signals?',
+          value: '🚀 **Upgrade now** to get premium Grade A signals with the highest accuracy!\n[**Sign Up for Membership →**](https://your-app-url.lovable.app/subscribe)',
+          inline: false
         }
       ],
       timestamp: new Date().toISOString(),

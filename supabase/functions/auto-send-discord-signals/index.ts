@@ -315,6 +315,8 @@ serve(async (req) => {
         { name: '📈 Chikou Span', value: strongestSignal.chikouSpanStatus, inline: true },
         { name: '🎲 RSI', value: strongestSignal.rsi.toFixed(2), inline: true },
         { name: '📉 24h Change', value: `${strongestSignal.priceChangePercent24h! > 0 ? '+' : ''}${strongestSignal.priceChangePercent24h!.toFixed(2)}%`, inline: true },
+        { name: '\u200B', value: '\u200B', inline: false },
+        { name: '⭐ Upgrade to Grade A Signals!', value: '🔥 **Get premium Grade A signals** with the highest accuracy and multi-timeframe analysis!\n[**Sign Up Now →**](https://your-app-url.lovable.app/subscribe)', inline: false }
       ],
       timestamp: new Date().toISOString(),
       footer: { text: 'B.L.K. Automated Signal • 6am PT Daily' }
