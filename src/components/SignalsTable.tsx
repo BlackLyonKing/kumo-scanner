@@ -1,12 +1,14 @@
 import { TradingSignal } from "@/types/trading";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Minus, Volume2, VolumeX } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Volume2, VolumeX, Send } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import HelpTooltip from "@/components/HelpTooltip";
 import DetailedSignalView from "@/components/DetailedSignalView";
 import SignalStrengthIndicator from "@/components/SignalStrengthIndicator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface SignalsTableProps {
   signals: TradingSignal[];
@@ -16,6 +18,8 @@ interface SignalsTableProps {
 
 const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) => {
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [sendingToDiscord, setSendingToDiscord] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getSignalIcon = (signal: string) => {
     switch (signal) {
@@ -80,6 +84,44 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
           pulse: false,
           url: phemexUrl
         };
+    }
+  };
+
+  const sendToDiscord = async (signal: TradingSignal) => {
+    setSendingToDiscord(signal.symbol);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-discord-alert', {
+        body: {
+          symbol: signal.symbol,
+          signal: signal.signal,
+          signalGrade: signal.signalGrade,
+          currentPrice: signal.currentPrice,
+          cloudStatus: signal.cloudStatus,
+          tkCross: signal.tkCross,
+          chikouSpanStatus: signal.chikouSpanStatus,
+          rsi: signal.rsi,
+          priceChangePercent24h: signal.priceChangePercent24h,
+          volume24h: signal.volume24h,
+          signalStrength: signal.signalStrength,
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Signal Sent!",
+        description: `${signal.symbol} analysis sent to Discord group`,
+      });
+    } catch (error) {
+      console.error('Error sending to Discord:', error);
+      toast({
+        title: "Failed to Send",
+        description: "Could not send signal to Discord. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingToDiscord(null);
     }
   };
 
@@ -337,26 +379,41 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <div className="flex justify-center">
+                    <div className="flex justify-center gap-2">
                       {(() => {
                         const config = getTradeButtonConfig(signal);
                         return (
-                          <Button
-                            size="sm"
-                            disabled={config.disabled}
-                            className={cn(
-                              "min-w-[120px] font-bold text-sm transition-all duration-300 hover:scale-105",
-                              config.className,
-                              config.pulse && "animate-pulse"
-                            )}
-                            onClick={() => {
-                              if (!config.disabled) {
-                                window.open(config.url, '_blank');
-                              }
-                            }}
-                          >
-                            {config.text}
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={config.disabled}
+                              className={cn(
+                                "min-w-[120px] font-bold text-sm transition-all duration-300 hover:scale-105",
+                                config.className,
+                                config.pulse && "animate-pulse"
+                              )}
+                              onClick={() => {
+                                if (!config.disabled) {
+                                  window.open(config.url, '_blank');
+                                }
+                              }}
+                            >
+                              {config.text}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={sendingToDiscord === signal.symbol}
+                              className="border-primary/20 hover:bg-primary/10 hover:border-primary/40"
+                              onClick={() => sendToDiscord(signal)}
+                            >
+                              {sendingToDiscord === signal.symbol ? (
+                                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </>
                         );
                       })()}
                     </div>
@@ -492,26 +549,47 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               </div>
 
               {/* Trade Now Button */}
-              <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
                 {(() => {
                   const config = getTradeButtonConfig(signal);
                   return (
-                    <Button
-                      size="lg"
-                      disabled={config.disabled}
-                      className={cn(
-                        "w-full font-bold text-base h-12 transition-all duration-300 hover:scale-[1.02]",
-                        config.className,
-                        config.pulse && "animate-pulse"
-                      )}
-                      onClick={() => {
-                        if (!config.disabled) {
-                          window.open(config.url, '_blank');
-                        }
-                      }}
-                    >
-                      {config.text}
-                    </Button>
+                    <>
+                      <Button
+                        size="lg"
+                        disabled={config.disabled}
+                        className={cn(
+                          "w-full font-bold text-base h-12 transition-all duration-300 hover:scale-[1.02]",
+                          config.className,
+                          config.pulse && "animate-pulse"
+                        )}
+                        onClick={() => {
+                          if (!config.disabled) {
+                            window.open(config.url, '_blank');
+                          }
+                        }}
+                      >
+                        {config.text}
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        disabled={sendingToDiscord === signal.symbol}
+                        className="w-full border-primary/20 hover:bg-primary/10 hover:border-primary/40 h-12"
+                        onClick={() => sendToDiscord(signal)}
+                      >
+                        {sendingToDiscord === signal.symbol ? (
+                          <>
+                            <div className="w-4 h-4 mr-2 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-2" />
+                            Send to Discord
+                          </>
+                        )}
+                      </Button>
+                    </>
                   );
                 })()}
               </div>
