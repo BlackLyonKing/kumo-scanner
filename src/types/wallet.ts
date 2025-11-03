@@ -44,6 +44,12 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
     chain: 'solana',
   },
   {
+    name: 'Solflare',
+    icon: '🌅',
+    installed: typeof window !== 'undefined' && Boolean(window.solflare?.isSolflare),
+    chain: 'solana',
+  },
+  {
     name: 'Coinbase',
     icon: '🟦',
     installed: typeof window !== 'undefined' && Boolean((window as any).ethereum?.isCoinbaseWallet),
@@ -59,5 +65,6 @@ declare global {
       solana?: any;
     };
     solana?: any;
+    solflare?: any;
   }
 }

@@ -8,6 +8,7 @@ declare global {
       solana?: any;
     };
     solana?: any;
+    solflare?: any;
   }
 }
 

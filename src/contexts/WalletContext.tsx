@@ -162,6 +162,57 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           }
           return;
 
+        case 'Solflare':
+          if (!window.solflare) {
+            window.open('https://solflare.com/download', '_blank');
+            toast({
+              title: "Solflare Wallet not found",
+              description: "Please install Solflare Wallet browser extension",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          const solflareProvider = window.solflare;
+          
+          try {
+            await solflareProvider.connect();
+            
+            // Get Solana balance
+            const connection = new Connection('https://solana-rpc.publicnode.com');
+            const publicKey = new PublicKey(solflareProvider.publicKey.toString());
+            const solBalance = await connection.getBalance(publicKey);
+            
+            const walletData: ConnectedWallet = {
+              address: solflareProvider.publicKey.toString(),
+              chainId: 'solana-mainnet',
+              balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+              walletName,
+              chain: 'solana',
+            };
+
+            setWallet(walletData);
+            setIsConnected(true);
+            setProvider(solflareProvider);
+            localStorage.setItem('connectedWallet', JSON.stringify(walletData));
+
+            toast({
+              title: "Wallet Connected",
+              description: `Connected to ${walletName}`,
+            });
+          } catch (err: any) {
+            if (err.code === 4001) {
+              toast({
+                title: "Connection Rejected",
+                description: "You rejected the connection request",
+                variant: "destructive",
+              });
+            } else {
+              throw err;
+            }
+          }
+          return;
+
         case 'Coinbase':
           if (!window.ethereum?.isCoinbaseWallet) {
             window.open('https://www.coinbase.com/wallet/downloads', '_blank');
@@ -217,12 +268,16 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   };
 
   const disconnect = async () => {
-    // Disconnect Phantom Solana if connected
-    if (wallet?.chain === 'solana' && (window as any).phantom?.solana) {
+    // Disconnect Solana wallets if connected
+    if (wallet?.chain === 'solana') {
       try {
-        await (window as any).phantom.solana.disconnect();
+        if (wallet.walletName === 'Phantom' && window.phantom?.solana) {
+          await window.phantom.solana.disconnect();
+        } else if (wallet.walletName === 'Solflare' && window.solflare) {
+          await window.solflare.disconnect();
+        }
       } catch (error) {
-        console.error('Error disconnecting Phantom:', error);
+        console.error('Error disconnecting wallet:', error);
       }
     }
     
@@ -269,9 +324,18 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
     try {
       // Handle Solana wallet signing
-      if (wallet?.chain === 'solana' && (window as any).phantom?.solana) {
+      if (wallet?.chain === 'solana') {
         const encodedMessage = new TextEncoder().encode(message);
-        const signedMessage = await (window as any).phantom.solana.signMessage(encodedMessage, 'utf8');
+        let signedMessage;
+        
+        if (wallet.walletName === 'Phantom' && window.phantom?.solana) {
+          signedMessage = await window.phantom.solana.signMessage(encodedMessage, 'utf8');
+        } else if (wallet.walletName === 'Solflare' && window.solflare) {
+          signedMessage = await window.solflare.signMessage(encodedMessage, 'utf8');
+        } else {
+          throw new Error('Solana wallet not found');
+        }
+        
         return Buffer.from(signedMessage.signature).toString('hex');
       }
       
