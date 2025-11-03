@@ -113,6 +113,24 @@ serve(async (req) => {
       }
     };
 
+    // Add recent success message only if there's significant positive movement
+    if (signalData.priceChangePercent24h !== undefined && signalData.priceChangePercent24h > 5) {
+      const successIndex = embed.fields.findIndex(f => f.name === '🚀 Recent Success');
+      if (successIndex !== -1) {
+        embed.fields[successIndex] = {
+          name: '🚀 Recent Performance',
+          value: `**${signalData.symbol}** is up **+${signalData.priceChangePercent24h.toFixed(2)}%** in the last 24 hours! 📈`,
+          inline: false
+        };
+      }
+    } else {
+      // Remove the success message if no significant positive movement
+      const successIndex = embed.fields.findIndex(f => f.name === '🚀 Recent Success');
+      if (successIndex !== -1) {
+        embed.fields.splice(successIndex, 1);
+      }
+    }
+
     // Add optional fields if available
     if (signalData.priceChangePercent24h !== undefined) {
       embed.fields.push({
