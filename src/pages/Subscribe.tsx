@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,40 +7,38 @@ import { Check, TrendingUp, ArrowLeft } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import CryptoPayment from '@/components/CryptoPayment';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 const Subscribe = () => {
   const navigate = useNavigate();
   const { subscription, loading } = useSubscription();
+  const [plans, setPlans] = useState<any[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
 
-  const plans = [
-    {
-      id: 'weekly',
-      name: 'Weekly',
-      price: 12,
-      period: 'week',
-      description: 'Perfect for short-term traders',
-      popular: false,
-      savings: null,
-    },
-    {
-      id: 'monthly',
-      name: 'Monthly',
-      price: 39,
-      period: 'month',
-      description: 'Best value for active traders',
-      popular: true,
-      savings: '33% savings vs weekly',
-    },
-    {
-      id: 'quarterly',
-      name: 'Quarterly',
-      price: 99,
-      period: '3 months',
-      description: 'Maximum savings for committed traders',
-      popular: false,
-      savings: '15% savings vs monthly',
-    },
-  ];
+  useEffect(() => {
+    const fetchPlans = async () => {
+      const { data } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .order('price_usd', { ascending: true });
+      
+      if (data) {
+        const formattedPlans = data.map((plan, idx) => ({
+          id: plan.id,
+          name: plan.name,
+          price: Number(plan.price_usd),
+          period: plan.billing_cycle === 'monthly' ? 'month' : plan.billing_cycle === 'annual' ? 'year' : 'week',
+          description: idx === 0 ? 'Perfect for short-term traders' : idx === 1 ? 'Best value for active traders' : 'Maximum savings for committed traders',
+          popular: idx === 1,
+          savings: idx > 0 ? `${Math.round((1 - (Number(plan.price_usd) / (data[0] ? Number(data[0].price_usd) * (idx + 1) : 1))) * 100)}% savings` : null,
+        }));
+        setPlans(formattedPlans);
+      }
+      setPlansLoading(false);
+    };
+    
+    fetchPlans();
+  }, []);
 
   const features = [
     'Unlimited market scans',
@@ -55,7 +53,7 @@ const Subscribe = () => {
     'Priority support',
   ];
 
-  if (loading) {
+  if (loading || plansLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
         <div className="max-w-6xl mx-auto space-y-8 py-8">
@@ -131,6 +129,7 @@ const Subscribe = () => {
                   amount={plan.price.toString()}
                   title={`${plan.name} Plan`}
                   description={`Pay with crypto for ${plan.name.toLowerCase()} access`}
+                  planId={plan.id}
                 >
                   <Button className="w-full" size="lg">
                     {subscription.isTrial ? 'Upgrade Now' : 'Start Free Trial'}

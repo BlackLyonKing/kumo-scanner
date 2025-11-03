@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ interface CryptoPaymentProps {
   title: string;
   description: string;
   children: React.ReactNode;
+  planId?: string;
 }
 
 const WALLET_ADDRESSES = {
@@ -27,7 +29,8 @@ const CRYPTO_RATES = {
   USD_TO_SOL: 0.0059    // $1 ≈ 0.0059 SOL (~$170/SOL)
 };
 
-const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, description, children }) => {
+const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, description, children, planId }) => {
+  const navigate = useNavigate();
   const [selectedCrypto, setSelectedCrypto] = useState<'ETH' | 'BTC' | 'SOL'>('ETH');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -152,13 +155,26 @@ const CryptoPayment: React.FC<CryptoPaymentProps> = ({ amount, title, descriptio
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View on Explorer
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
-                  Close
-                </Button>
+                {planId && (
+                  <Button 
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/verify-payment?planId=${planId}&crypto=${selectedCrypto}`);
+                    }}
+                  >
+                    I've Sent Payment
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -8,6 +8,7 @@ import { WalletProvider } from "@/contexts/WalletContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Subscribe from "./pages/Subscribe";
+import VerifyPayment from "./pages/VerifyPayment";
 import CoursePage from "./pages/CoursePage";
 import ChartPatternsCoursePage from "./pages/ChartPatternsCoursePage";
 import MarketPsychologyCoursePage from "./pages/MarketPsychologyCoursePage";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/subscribe" element={<Subscribe />} />
+            <Route path="/verify-payment" element={<VerifyPayment />} />
             <Route path="/course/ichimoku-mastery" element={<CoursePage />} />
             <Route path="/course/chart-patterns" element={<ChartPatternsCoursePage />} />
             <Route path="/course/market-psychology" element={<MarketPsychologyCoursePage />} />
