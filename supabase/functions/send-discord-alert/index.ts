@@ -98,7 +98,7 @@ serve(async (req) => {
         },
         {
           name: '⭐ Want Grade A Signals?',
-          value: '🚀 **Upgrade now** to get premium Grade A signals with the highest accuracy!\n[**Sign Up for Membership →**](https://your-app-url.lovable.app/subscribe)',
+          value: '🚀 **Upgrade now** to get premium Grade A signals with the highest accuracy!\n[**Sign Up for Membership →**](https://blktrading.group/subscribe)',
           inline: false
         }
       ],
