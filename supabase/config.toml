@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.course-ai-assistant]
 verify_jwt = false
+
+[functions.auto-send-discord-signals]
+verify_jwt = false
