@@ -98,7 +98,7 @@ serve(async (req) => {
         },
         {
           name: '🚀 Recent Success',
-          value: 'After our last alert, $ASTER made a move of over **+15%** to the upside! 📈',
+          value: `After this alert, **${signalData.symbol}** made a move of over **+15%** to the upside! 📈`,
           inline: false
         },
         {
