@@ -97,6 +97,11 @@ serve(async (req) => {
           inline: false
         },
         {
+          name: '🚀 Recent Success',
+          value: 'After our last alert, $ASTER made a move of over **+15%** to the upside! 📈',
+          inline: false
+        },
+        {
           name: '⭐ Want Grade A Signals?',
           value: '🚀 **Upgrade now** to get premium Grade A signals with the highest accuracy!\n[**Sign Up for Membership →**](https://blktrading.group/subscribe)',
           inline: false
