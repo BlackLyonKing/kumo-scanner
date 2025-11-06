@@ -9,6 +9,7 @@ export const CHIKOU_PERIOD = 26;
 export const RSI_PERIOD = 14;
 
 // API configuration for multiple exchanges
+const CRYPTOCOMPARE_API_URL = 'https://min-api.cryptocompare.com/data/v2/histohour';
 const BINANCE_API_URL = 'https://api.binance.com/api/v3/klines';
 const BINANCE_SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 const BINANCE_FUTURES_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
@@ -357,92 +358,121 @@ export const SCAN_PRESETS: Record<string, ScanConfig> = {
 export async function fetchHistoricalData(symbol: string, interval: string = '1d'): Promise<CandleData[] | null> {
   const limit = SENKOU_PERIOD + CHIKOU_PERIOD + RSI_PERIOD + 20;
   
+  // Extract base and quote currency from symbol
+  const baseCurrency = symbol.replace('USDT', '').replace('USD', '');
+  const quoteCurrency = symbol.includes('USDT') ? 'USDT' : 'USD';
+  
   try {
     // Apply rate limiting to prevent API abuse
     await rateLimiter.throttle();
     
-    // Enhanced Phemex symbol detection and handling
-    const isPhemexSymbol = symbol.includes('USD') && !symbol.includes('USDT');
-    
-    let response: Response;
-    let data: any;
-    
-    if (isPhemexSymbol) {
-      // Use Phemex API for Phemex symbols
-      const phemexSymbol = symbol.replace('USDT', 'USD');
-      const phemexInterval = interval === '1d' ? '86400' : (interval === '4h' ? '14400' : '3600'); // Use seconds for Phemex
-      
-      console.log(`📈 Fetching Phemex data for ${phemexSymbol}, interval: ${phemexInterval}`);
-      
-      response = await fetchWithRetry(
-        withProxy(`https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`),
-        { 
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          }
-        },
-        3, 1000
+    // Strategy 1: Try CryptoCompare API first (free, reliable, no auth needed)
+    try {
+      console.log(`📊 Trying CryptoCompare API for ${symbol}...`);
+      const ccResponse = await fetchWithRetry(
+        `${CRYPTOCOMPARE_API_URL}?fsym=${baseCurrency}&tsym=${quoteCurrency}&limit=${limit}`,
+        { method: 'GET' },
+        2, 1000
       );
       
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unable to read error response');
-        console.error(`❌ Phemex kline API error for ${phemexSymbol}:`, {
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText.substring(0, 200)
-        });
-        throw new Error(`Phemex API error: ${response.status} ${response.statusText}`);
+      if (ccResponse.ok) {
+        const ccData = await ccResponse.json();
+        
+        if (ccData.Response === 'Success' && ccData.Data?.Data) {
+          console.log(`✅ CryptoCompare: Retrieved ${ccData.Data.Data.length} candles for ${symbol}`);
+          
+          return ccData.Data.Data.map((candle: any) => ({
+            timestamp: candle.time * 1000, // Convert to milliseconds
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+            volume: candle.volumeto || 0
+          }));
+        }
       }
-      
-      data = await response.json();
-      
-      if (!data.data || !data.data.rows || !Array.isArray(data.data.rows)) {
-        console.warn(`⚠️ No kline data available for Phemex symbol ${symbol}:`, data);
-        return null;
-      }
-      
-      console.log(`✅ Retrieved ${data.data.rows.length} candles for ${phemexSymbol}`);
-      
-      // Convert Phemex format to standard format
-      return data.data.rows.map((row: any[]) => ({
-        timestamp: row[0] * 1000, // Convert seconds to milliseconds
-        open: row[1] / Math.pow(10, 8), // Phemex uses scaled prices
-        high: row[2] / Math.pow(10, 8),
-        low: row[3] / Math.pow(10, 8),
-        close: row[4] / Math.pow(10, 8),
-        volume: row[5] || 0
-      }));
-    } else {
-      // Use Binance API for Binance symbols
-      const url = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-      
-      response = await fetchWithRetry(url, { method: 'GET' }, 2, 1000);
-      
-      if (!response.ok) {
-        throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
-      }
-      
-      data = await response.json();
-      
-      return data.map((row: any[]) => ({
-        timestamp: row[0],
-        open: parseFloat(row[1]),
-        high: parseFloat(row[2]),
-        low: parseFloat(row[3]),
-        close: parseFloat(row[4]),
-        volume: parseFloat(row[5])
-      }));
+    } catch (ccError) {
+      console.warn(`⚠️ CryptoCompare failed for ${symbol}, trying Binance...`);
     }
+    
+    // Strategy 2: Fallback to Binance API
+    const isPhemexSymbol = symbol.includes('USD') && !symbol.includes('USDT');
+    
+    if (!isPhemexSymbol) {
+      try {
+        console.log(`📈 Trying Binance API for ${symbol}...`);
+        const binanceUrl = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+        
+        const binanceResponse = await fetchWithRetry(binanceUrl, { method: 'GET' }, 3, 2000);
+        
+        if (binanceResponse.ok) {
+          const binanceData = await binanceResponse.json();
+          console.log(`✅ Binance: Retrieved ${binanceData.length} candles for ${symbol}`);
+          
+          return binanceData.map((row: any[]) => ({
+            timestamp: row[0],
+            open: parseFloat(row[1]),
+            high: parseFloat(row[2]),
+            low: parseFloat(row[3]),
+            close: parseFloat(row[4]),
+            volume: parseFloat(row[5])
+          }));
+        }
+      } catch (binanceError) {
+        console.warn(`⚠️ Binance failed for ${symbol}, trying Phemex...`);
+      }
+    }
+    
+    // Strategy 3: Fallback to Phemex API for USD symbols
+    if (isPhemexSymbol || quoteCurrency === 'USD') {
+      try {
+        const phemexSymbol = symbol.replace('USDT', 'USD');
+        const phemexInterval = interval === '1d' ? '86400' : (interval === '4h' ? '14400' : '3600');
+        
+        console.log(`📈 Trying Phemex API for ${phemexSymbol}...`);
+        
+        const phemexResponse = await fetchWithRetry(
+          withProxy(`https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`),
+          { 
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          },
+          3, 2000
+        );
+        
+        if (phemexResponse.ok) {
+          const phemexData = await phemexResponse.json();
+          
+          if (phemexData.data?.rows && Array.isArray(phemexData.data.rows)) {
+            console.log(`✅ Phemex: Retrieved ${phemexData.data.rows.length} candles for ${phemexSymbol}`);
+            
+            return phemexData.data.rows.map((row: any[]) => ({
+              timestamp: row[0] * 1000,
+              open: row[1] / Math.pow(10, 8),
+              high: row[2] / Math.pow(10, 8),
+              low: row[3] / Math.pow(10, 8),
+              close: row[4] / Math.pow(10, 8),
+              volume: row[5] || 0
+            }));
+          }
+        }
+      } catch (phemexError) {
+        console.error(`❌ All API sources failed for ${symbol}`);
+      }
+    }
+    
+    console.error(`❌ No data sources available for ${symbol}`);
+    return null;
+    
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'TimeoutError') {
-        console.error(`Timeout fetching data for ${symbol} (${interval})`);
+        console.error(`⏱️ Timeout fetching data for ${symbol} (${interval})`);
       } else {
-        console.error(`Error fetching data for ${symbol} (${interval}):`, error.message);
+        console.error(`❌ Error fetching data for ${symbol} (${interval}):`, error.message);
       }
     } else {
-      console.error(`Unknown error fetching data for ${symbol} (${interval}):`, error);
+      console.error(`❌ Unknown error fetching data for ${symbol} (${interval}):`, error);
     }
     return null;
   }

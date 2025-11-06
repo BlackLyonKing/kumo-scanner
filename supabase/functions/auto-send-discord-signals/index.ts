@@ -100,24 +100,59 @@ function calculateRSI(prices: number[], period: number = 14): number {
   return 100 - (100 / (1 + rs));
 }
 
-// Fetch historical data from Binance
+// Fetch historical data with multiple fallbacks
 async function fetchHistoricalData(symbol: string): Promise<KlineData[]> {
-  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=4h&limit=100`;
-  const response = await fetch(url);
+  const baseCurrency = symbol.replace('USDT', '');
+  const limit = 100;
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch data for ${symbol}`);
+  // Strategy 1: Try CryptoCompare API first (free, no auth)
+  try {
+    console.log(`Trying CryptoCompare for ${symbol}...`);
+    const ccUrl = `https://min-api.cryptocompare.com/data/v2/histohour?fsym=${baseCurrency}&tsym=USDT&limit=${limit}`;
+    const ccResponse = await fetch(ccUrl);
+    
+    if (ccResponse.ok) {
+      const ccData = await ccResponse.json();
+      
+      if (ccData.Response === 'Success' && ccData.Data?.Data) {
+        console.log(`✅ CryptoCompare: Retrieved ${ccData.Data.Data.length} candles for ${symbol}`);
+        return ccData.Data.Data.map((candle: any) => ({
+          time: candle.time * 1000,
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close,
+          volume: candle.volumeto || 0
+        }));
+      }
+    }
+  } catch (error) {
+    console.warn(`CryptoCompare failed for ${symbol}:`, error);
   }
   
-  const data = await response.json();
-  return data.map((candle: any) => ({
-    time: candle[0],
-    open: parseFloat(candle[1]),
-    high: parseFloat(candle[2]),
-    low: parseFloat(candle[3]),
-    close: parseFloat(candle[4]),
-    volume: parseFloat(candle[5])
-  }));
+  // Strategy 2: Fallback to Binance
+  try {
+    console.log(`Trying Binance for ${symbol}...`);
+    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=4h&limit=${limit}`;
+    const binanceResponse = await fetch(binanceUrl);
+    
+    if (binanceResponse.ok) {
+      const binanceData = await binanceResponse.json();
+      console.log(`✅ Binance: Retrieved ${binanceData.length} candles for ${symbol}`);
+      return binanceData.map((candle: any) => ({
+        time: candle[0],
+        open: parseFloat(candle[1]),
+        high: parseFloat(candle[2]),
+        low: parseFloat(candle[3]),
+        close: parseFloat(candle[4]),
+        volume: parseFloat(candle[5])
+      }));
+    }
+  } catch (error) {
+    console.warn(`Binance failed for ${symbol}:`, error);
+  }
+  
+  throw new Error(`All API sources failed for ${symbol}`);
 }
 
 // Generate trading signal
