@@ -151,6 +151,32 @@ async function fetchHistoricalData(symbol: string): Promise<KlineData[]> {
   } catch (error) {
     console.warn(`Binance failed for ${symbol}:`, error);
   }
+
+  // Strategy 3: Try BloFin as third fallback
+  try {
+    console.log(`Trying BloFin for ${symbol}...`);
+    const blofinSymbol = symbol.replace('USDT', '-USDT');
+    const blofinUrl = `https://openapi.blofin.com/api/v1/market/candles?instId=${blofinSymbol}&bar=4H&limit=${limit}`;
+    
+    const blofinResponse = await fetch(blofinUrl);
+    if (blofinResponse.ok) {
+      const blofinData = await blofinResponse.json();
+      
+      if (blofinData.code === '0' && blofinData.data) {
+        console.log(`✅ BloFin: Retrieved ${blofinData.data.length} candles for ${symbol}`);
+        return blofinData.data.map((candle: any) => ({
+          time: parseInt(candle[0]),
+          open: parseFloat(candle[1]),
+          high: parseFloat(candle[2]),
+          low: parseFloat(candle[3]),
+          close: parseFloat(candle[4]),
+          volume: parseFloat(candle[5]) || 0
+        }));
+      }
+    }
+  } catch (error) {
+    console.warn(`BloFin failed for ${symbol}:`, error);
+  }
   
   throw new Error(`All API sources failed for ${symbol}`);
 }

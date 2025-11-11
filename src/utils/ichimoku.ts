@@ -14,6 +14,7 @@ const BINANCE_API_URL = 'https://api.binance.com/api/v3/klines';
 const BINANCE_SYMBOLS_URL = 'https://api.binance.com/api/v3/exchangeInfo';
 const BINANCE_FUTURES_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
 const PHEMEX_SYMBOLS_URL = 'https://api.phemex.com/exchange/public/products';
+const BLOFIN_API_URL = 'https://openapi.blofin.com';
 
 // Browser CORS proxy fallback for Phemex (their API often blocks browser origins)
 const CORS_PROXY = 'https://corsproxy.io/?';
@@ -457,8 +458,41 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
           }
         }
       } catch (phemexError) {
-        console.error(`❌ All API sources failed for ${symbol}`);
+        console.warn(`⚠️ Phemex failed for ${symbol}, trying BloFin...`);
       }
+    }
+
+    // Strategy 4: Try BloFin as final fallback
+    try {
+      const blofinSymbol = symbol.replace('USDT', '-USDT');
+      const blofinInterval = interval === '1d' ? '1D' : (interval === '4h' ? '4H' : '1H');
+      
+      console.log(`📈 Trying BloFin API for ${blofinSymbol}...`);
+      
+      const blofinResponse = await fetchWithRetry(
+        `${BLOFIN_API_URL}/api/v1/market/candles?instId=${blofinSymbol}&bar=${blofinInterval}&limit=${limit}`,
+        { method: 'GET' },
+        2, 1000
+      );
+      
+      if (blofinResponse.ok) {
+        const blofinData = await blofinResponse.json();
+        
+        if (blofinData.code === '0' && blofinData.data && Array.isArray(blofinData.data)) {
+          console.log(`✅ BloFin: Retrieved ${blofinData.data.length} candles for ${blofinSymbol}`);
+          
+          return blofinData.data.map((candle: any[]) => ({
+            timestamp: parseInt(candle[0]),
+            open: parseFloat(candle[1]),
+            high: parseFloat(candle[2]),
+            low: parseFloat(candle[3]),
+            close: parseFloat(candle[4]),
+            volume: parseFloat(candle[5]) || 0
+          }));
+        }
+      }
+    } catch (blofinError) {
+      console.error(`❌ All API sources failed for ${symbol}`);
     }
     
     console.error(`❌ No data sources available for ${symbol}`);
