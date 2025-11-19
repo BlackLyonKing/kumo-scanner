@@ -8,69 +8,69 @@
 
 @layer base {
   :root {
-    /* Ultra Modern Dark Trading Theme */
-    --background: 220 27% 4%;
-    --foreground: 210 40% 98%;
+    /* Whales.market inspired - Ultra Dark Theme */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 95%;
 
-    --card: 220 22% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 220 22% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 217 100% 68%;
-    --primary-foreground: 220 27% 4%;
-    --primary-glow: 217 100% 75%;
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 142 76% 55%;
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 220 15% 12%;
-    --muted-foreground: 217 10% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 280 100% 70%;
-    --accent-foreground: 220 27% 4%;
+    --accent: 142 76% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 85% 65%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 15%;
-    --input: 220 15% 12%;
-    --ring: 217 100% 68%;
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 142 76% 45%;
 
     /* Enhanced Trading Signal Colors */
-    --signal-long: 145 85% 55%;
-    --signal-long-foreground: 210 40% 98%;
-    --signal-long-glow: 145 85% 65%;
-    --signal-short: 0 85% 68%;
-    --signal-short-foreground: 210 40% 98%;
-    --signal-short-glow: 0 85% 75%;
-    --signal-neutral: 217 10% 65%;
-    --signal-neutral-foreground: 210 40% 98%;
+    --signal-long: 142 76% 48%;
+    --signal-long-foreground: 0 0% 100%;
+    --signal-long-glow: 142 76% 58%;
+    --signal-short: 0 84% 60%;
+    --signal-short-foreground: 0 0% 100%;
+    --signal-short-glow: 0 84% 70%;
+    --signal-neutral: 0 0% 60%;
+    --signal-neutral-foreground: 0 0% 100%;
 
     /* Enhanced Status Colors */
-    --warning: 45 93% 60%;
-    --warning-foreground: 220 27% 4%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
 
-    --success: 145 85% 55%;
-    --success-foreground: 210 40% 98%;
+    --success: 142 76% 48%;
+    --success-foreground: 0 0% 100%;
 
     /* Modern Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 100% 68%) 0%, hsl(217 100% 75%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 22% 8%) 0%, hsl(220 25% 10%) 100%);
-    --gradient-signal-long: linear-gradient(135deg, hsl(145 85% 55%) 0%, hsl(145 85% 65%) 100%);
-    --gradient-signal-short: linear-gradient(135deg, hsl(0 85% 68%) 0%, hsl(0 85% 75%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(280 100% 70%) 0%, hsl(240 100% 75%) 100%);
-    --gradient-surface: linear-gradient(145deg, hsl(220 22% 8%) 0%, hsl(220 20% 12%) 50%, hsl(220 22% 8%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(142 76% 55%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 6%) 0%, hsl(0 0% 8%) 100%);
+    --gradient-signal-long: linear-gradient(135deg, hsl(142 76% 48%) 0%, hsl(142 76% 58%) 100%);
+    --gradient-signal-short: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 84% 70%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(142 76% 55%) 100%);
+    --gradient-surface: linear-gradient(145deg, hsl(0 0% 6%) 0%, hsl(0 0% 8%) 50%, hsl(0 0% 6%) 100%);
 
     /* Modern Shadows & Effects */
-    --shadow-glow: 0 0 40px hsl(217 100% 68% / 0.25);
-    --shadow-card: 0 8px 32px hsl(220 27% 4% / 0.8);
-    --shadow-signal-long: 0 0 25px hsl(145 85% 55% / 0.4);
-    --shadow-signal-short: 0 0 25px hsl(0 85% 68% / 0.4);
-    --shadow-premium: 0 20px 64px hsl(217 100% 68% / 0.3);
+    --shadow-glow: 0 0 40px hsl(142 76% 45% / 0.25);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.8);
+    --shadow-signal-long: 0 0 25px hsl(142 76% 48% / 0.4);
+    --shadow-signal-short: 0 0 25px hsl(0 84% 60% / 0.4);
+    --shadow-premium: 0 20px 64px hsl(142 76% 45% / 0.3);
 
-    --radius: 0.875rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -132,21 +132,31 @@
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -0.01em;
-    background: 
-      radial-gradient(circle at 20% 50%, hsl(217 100% 68% / 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(280 100% 70% / 0.06) 0%, transparent 50%),
-      radial-gradient(circle at 40% 90%, hsl(145 85% 55% / 0.04) 0%, transparent 50%),
-      hsl(var(--background));
+    background: hsl(0 0% 4%);
     background-attachment: fixed;
   }
 }
 
 /* Modern Component Styles */
 @layer components {
+  /* Whales.market inspired card styles */
   .glass-card {
-    @apply backdrop-blur-xl bg-card/90 border border-border/60;
-    background: var(--gradient-surface);
-    box-shadow: var(--shadow-card), inset 0 1px 0 hsl(var(--border) / 0.1);
+    @apply bg-card border border-border;
+    background: hsl(0 0% 6%);
+    border-color: hsl(0 0% 15%);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.4);
+  }
+
+  .metric-card {
+    @apply bg-card border border-border rounded-lg;
+    background: hsl(0 0% 8%);
+    border-color: hsl(0 0% 15%);
+    transition: all 0.3s ease;
+  }
+
+  .metric-card:hover {
+    border-color: hsl(0 0% 20%);
+    transform: translateY(-2px);
   }
 
   .premium-card {
