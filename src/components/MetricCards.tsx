@@ -3,6 +3,7 @@ import { TradingSignal } from "@/types/trading";
 import { TrendingUp, TrendingDown, Activity, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FearGreedGauge } from "./FearGreedGauge";
+import { AltcoinSeasonMeter } from "./AltcoinSeasonMeter";
 
 interface MetricCardsProps {
   signals: TradingSignal[];
@@ -67,7 +68,7 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
       {metrics.map((metric, index) => (
         <Card key={index} className="metric-card border-border/50 overflow-hidden">
           <CardContent className="p-4">
@@ -88,6 +89,9 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
       
       {/* Fear & Greed Gauge */}
       <FearGreedGauge value={calculateMarketSentiment()} />
+      
+      {/* Altcoin Season Meter */}
+      <AltcoinSeasonMeter signals={signals} />
     </div>
   );
 };
