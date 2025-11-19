@@ -40,6 +40,7 @@ import MultiTimeframeDemo from "@/components/MultiTimeframeDemo";
 import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
 import { AdminPanel } from "@/components/AdminPanel";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { MetricCards } from "@/components/MetricCards";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -274,6 +275,8 @@ const Index = () => {
               
               {signals.length > 0 && (
                 <>
+                  <MetricCards signals={signals} />
+                  
                   <div className="grid lg:grid-cols-4 gap-4">
                     <div className="lg:col-span-3">
                       <SignalFilters
