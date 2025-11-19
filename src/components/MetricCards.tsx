@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TradingSignal } from "@/types/trading";
 import { TrendingUp, TrendingDown, Activity, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FearGreedGauge } from "./FearGreedGauge";
 
 interface MetricCardsProps {
   signals: TradingSignal[];
@@ -44,8 +45,29 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
     },
   ];
 
+  // Calculate market sentiment based on signals
+  const calculateMarketSentiment = () => {
+    if (signals.length === 0) return 50;
+    
+    // Base sentiment on signal distribution and grades
+    const longCount = longSignals;
+    const shortCount = shortSignals;
+    const totalSignals = signals.length;
+    
+    // Higher grade signals carry more weight
+    const gradeALongs = signals.filter(s => s.signal === 'Long Signal' && s.signalGrade === 'A').length;
+    const gradeAShorts = signals.filter(s => s.signal === 'Short Signal' && s.signalGrade === 'A').length;
+    
+    // Calculate weighted sentiment (0-100)
+    const longRatio = (longCount / totalSignals) * 100;
+    const gradeABoost = ((gradeALongs - gradeAShorts) / Math.max(gradeASignals, 1)) * 15;
+    
+    const sentiment = Math.max(0, Math.min(100, longRatio + gradeABoost));
+    return Math.round(sentiment);
+  };
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
       {metrics.map((metric, index) => (
         <Card key={index} className="metric-card border-border/50 overflow-hidden">
           <CardContent className="p-4">
@@ -63,6 +85,9 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
           </CardContent>
         </Card>
       ))}
+      
+      {/* Fear & Greed Gauge */}
+      <FearGreedGauge value={calculateMarketSentiment()} />
     </div>
   );
 };
