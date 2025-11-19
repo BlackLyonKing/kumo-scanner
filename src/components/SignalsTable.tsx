@@ -19,6 +19,7 @@ interface SignalsTableProps {
 const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) => {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [sendingToDiscord, setSendingToDiscord] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const { toast } = useToast();
 
   const getSignalIcon = (signal: string) => {
@@ -196,6 +197,23 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               {signals.length} pairs analyzed • Updated in real-time
             </p>
           </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="h-9"
+            >
+              Table
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="h-9"
+            >
+              Grid
+            </Button>
             <Button
             variant={soundEnabled ? "default" : "outline"}
             size="sm"
@@ -220,10 +238,108 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
             )}
           </Button>
+          </div>
         </div>
         
+        {/* Grid View */}
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 p-4">
+            {signals.map((signal, index) => {
+              const config = getTradeButtonConfig(signal);
+              return (
+                <div
+                  key={signal.symbol}
+                  className={cn(
+                    "relative p-3 rounded-lg border glass-card animate-fade-in hover:shadow-lg transition-all",
+                    signal.signal === 'Long Signal' && "border-signal-long/30 hover:border-signal-long/50",
+                    signal.signal === 'Short Signal' && "border-signal-short/30 hover:border-signal-short/50",
+                    signal.signal === 'Neutral' && "border-muted/30"
+                  )}
+                  style={{ animationDelay: `${index * 20}ms` }}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {getSignalIcon(signal.signal)}
+                      <span className="font-mono font-bold text-sm">{signal.symbol}</span>
+                    </div>
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs",
+                      signal.signalGrade === 'A' && "bg-signal-long/20 text-signal-long",
+                      signal.signalGrade === 'B' && "bg-yellow-500/20 text-yellow-500",
+                      signal.signalGrade === 'C' && "bg-orange-500/20 text-orange-500"
+                    )}>
+                      {signal.signalGrade}
+                    </div>
+                  </div>
+
+                  {/* Price and Signal */}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Price</span>
+                      <span className="font-mono font-semibold text-sm">${signal.currentPrice.toFixed(2)}</span>
+                    </div>
+                    {signal.priceChangePercent24h !== undefined && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">24h</span>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          signal.priceChangePercent24h >= 0 ? "text-signal-long" : "text-signal-short"
+                        )}>
+                          {signal.priceChangePercent24h >= 0 ? '+' : ''}{signal.priceChangePercent24h.toFixed(2)}%
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Signal</span>
+                      <span className={cn("text-xs font-bold", getSignalClassName(signal.signal))}>
+                        {signal.signal === 'Long Signal' ? 'LONG' : signal.signal === 'Short Signal' ? 'SHORT' : 'NEUTRAL'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">RSI</span>
+                      <span className="text-xs font-medium">{signal.rsi.toFixed(1)}</span>
+                    </div>
+                  </div>
+
+                  {/* Signal Strength */}
+                  <div className="mb-3">
+                    <SignalStrengthIndicator signal={signal} />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      disabled={config.disabled}
+                      className={cn("flex-1 text-xs h-8", config.className)}
+                      onClick={() => !config.disabled && window.open(config.url, '_blank')}
+                    >
+                      {signal.signal === 'Long Signal' ? '🚀' : signal.signal === 'Short Signal' ? '📉' : '⏸️'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={sendingToDiscord === signal.symbol}
+                      className="border-primary/20 hover:bg-primary/10 h-8 px-2"
+                      onClick={() => sendToDiscord(signal)}
+                    >
+                      {sendingToDiscord === signal.symbol ? (
+                        <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send className="h-3 w-3" />
+                      )}
+                    </Button>
+                    <DetailedSignalView signal={signal} onFetchChartData={async () => []} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
         {/* Desktop Table View */}
-        <div className="hidden lg:block overflow-x-auto">
+        {viewMode === 'table' && <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left table-auto">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-muted-foreground border-b border-border/50 bg-muted/20">
@@ -422,10 +538,10 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               ))}
             </tbody>
           </table>
-        </div>
+        </div>}
 
         {/* Mobile Card View */}
-        <div className="lg:hidden space-y-4 p-4">
+        {viewMode === 'table' && <div className="lg:hidden space-y-4 p-4">
           {signals.map((signal, index) => (
             <div 
               key={signal.symbol}
@@ -595,7 +711,7 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </CardContent>
     </Card>
   );
