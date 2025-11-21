@@ -42,6 +42,9 @@ import { AdminPanel } from "@/components/AdminPanel";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { MetricCards } from "@/components/MetricCards";
 import { TrialStatusBanner } from "@/components/TrialStatusBanner";
+import { ReferralDashboard } from "@/components/ReferralDashboard";
+import { useReferralData } from "@/hooks/useReferralData";
+import { ReferralWelcomeModal } from "@/components/ReferralWelcomeModal";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -61,6 +64,8 @@ const Index = () => {
   const { subscription, loading: subLoading } = useSubscription();
   const { isConnected } = useWallet();
   const { isAdmin } = useAdminRole();
+  const { applyReferralCode } = useReferralData();
+  const [welcomeReferralCode, setWelcomeReferralCode] = useState<string | null>(null);
 
   // Check wallet connection
   useEffect(() => {
@@ -74,6 +79,29 @@ const Index = () => {
   
   // Enable browser notifications for Grade A signals
   useSignalAlerts(signals, alertsEnabled);
+
+  // Auto-apply referral code from URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    
+    if (refCode) {
+      // Show welcome modal
+      setWelcomeReferralCode(refCode);
+      
+      if (isConnected) {
+        // Wait a bit for subscription to load
+        setTimeout(async () => {
+          const result = await applyReferralCode(refCode);
+          if (result.success) {
+            // Remove ref parameter from URL
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        }, 2000);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
 
   // Filter and sort signals
   const filteredAndSortedSignals = useMemo(() => {
@@ -231,6 +259,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
+      <ReferralWelcomeModal 
+        referralCode={welcomeReferralCode}
+        onClose={() => setWelcomeReferralCode(null)}
+      />
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       <div className="container mx-auto px-4 sm:px-6 py-2 max-w-7xl relative z-10">
         <div className="flex items-center justify-between mb-2">
@@ -244,11 +276,12 @@ const Index = () => {
         <RiskWarning />
         
         <Tabs defaultValue="scanner" className="w-full mt-2">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'}`}>
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'}`}>
             <TabsTrigger value="scanner">Scanner</TabsTrigger>
             <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
             <TabsTrigger value="market">Market</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            <TabsTrigger value="referrals">Referrals</TabsTrigger>
             <TabsTrigger value="education">Learn</TabsTrigger>
             {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           </TabsList>
@@ -346,6 +379,10 @@ const Index = () => {
                 <GeminiAnalysis signals={filteredAndSortedSignals} />
               </div>
             </SubscriptionGate>
+          </TabsContent>
+          
+          <TabsContent value="referrals" className="space-y-4 mt-4">
+            <ReferralDashboard />
           </TabsContent>
           
           <TabsContent value="education" className="space-y-4 mt-4">
