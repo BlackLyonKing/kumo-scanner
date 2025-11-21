@@ -5,16 +5,16 @@ import blkLogo from "/lovable-uploads/b1afa972-7ed7-4b6c-8fa9-e150b28a48e3.png";
 
 const TradingHeader = () => {
   return (
-    <header className="relative text-center mb-8 animate-fade-in">
+    <header className="relative text-center mb-4 animate-fade-in">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-3xl blur-3xl pointer-events-none" />
       <div className="relative">
         {/* Top row with wallet connection and API health */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-2">
           <ApiHealthIndicator />
           <WalletConnect />
         </div>
         
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-3">
           <div className="relative p-2 sm:p-4 glass-card rounded-xl sm:rounded-2xl">
             <TrendingUp className="h-6 w-6 sm:h-10 sm:w-10 text-primary animate-pulse-glow" />
             <div className="absolute -top-1 -right-1">

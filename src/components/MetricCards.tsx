@@ -71,10 +71,10 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
       {metrics.map((metric, index) => (
         <Card key={index} className="metric-card border-border/50 overflow-hidden">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">{metric.label}</p>
