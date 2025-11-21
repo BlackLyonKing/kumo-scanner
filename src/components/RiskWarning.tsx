@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const RiskWarning = () => {
   return (
     <Card className="glass-card border-destructive/30 bg-destructive/5 mb-8 animate-fade-in overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 via-transparent to-warning/10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 via-transparent to-warning/10 pointer-events-none" />
       <CardContent className="relative p-6">
         <div className="flex items-start gap-4">
           <div className="relative">
