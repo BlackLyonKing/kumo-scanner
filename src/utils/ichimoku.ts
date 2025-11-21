@@ -747,11 +747,22 @@ export function generateTradingSignal(
 
 // Notification function
 export function sendNotification(symbol: string, signal: string) {
-  if (Notification.permission === "granted") {
-    new Notification('Ichimoku Signal Found!', {
-      body: `A Grade A ${signal} has been found for ${symbol}.`,
-      icon: '/favicon.ico'
-    });
+  try {
+    if (!("Notification" in window)) {
+      console.warn("Browser does not support notifications");
+      return;
+    }
+    
+    if (Notification.permission === "granted") {
+      new Notification('Ichimoku Signal Found!', {
+        body: `A Grade A ${signal} has been found for ${symbol}.`,
+        icon: '/favicon.ico'
+      });
+    } else if (Notification.permission === "default") {
+      console.log("Notification permission not granted yet");
+    }
+  } catch (error) {
+    console.error("Failed to send notification:", error);
   }
 }
 

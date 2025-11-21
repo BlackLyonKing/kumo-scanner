@@ -9,6 +9,7 @@ import DetailedSignalView from "@/components/DetailedSignalView";
 import SignalStrengthIndicator from "@/components/SignalStrengthIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { fetchHistoricalData } from "@/utils/ichimoku";
 
 interface SignalsTableProps {
   signals: TradingSignal[];
@@ -405,8 +406,21 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
                       <DetailedSignalView 
                         signal={signal}
                         onFetchChartData={async (symbol) => {
-                          // You can pass this as a prop or implement here
-                          return [];
+                          try {
+                            const data = await fetchHistoricalData(symbol, '1d');
+                            if (!data) return [];
+                            
+                            return data.map(candle => ({
+                              timestamp: candle.timestamp,
+                              open: candle.open,
+                              high: candle.high,
+                              low: candle.low,
+                              close: candle.close,
+                            }));
+                          } catch (error) {
+                            console.error('Failed to fetch chart data:', error);
+                            return [];
+                          }
                         }}
                       />
                     </div>
