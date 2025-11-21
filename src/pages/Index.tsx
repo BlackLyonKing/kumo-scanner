@@ -231,8 +231,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-      <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 max-w-7xl relative z-10">
-        <div className="flex items-center justify-between mb-4">
+      <div className="container mx-auto px-4 sm:px-6 py-2 max-w-7xl relative z-10">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex-1">
             <TradingHeader />
           </div>
@@ -241,7 +241,7 @@ const Index = () => {
         <VpnNotice />
         <RiskWarning />
         
-        <Tabs defaultValue="scanner" className="w-full mt-4">
+        <Tabs defaultValue="scanner" className="w-full mt-2">
           <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'}`}>
             <TabsTrigger value="scanner">Scanner</TabsTrigger>
             <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
@@ -251,9 +251,9 @@ const Index = () => {
             {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           </TabsList>
           
-          <TabsContent value="scanner" className="space-y-4 mt-4">
+          <TabsContent value="scanner" className="space-y-3 mt-3">
             <SubscriptionGate feature="the Premium Scanner">
-              <div className="grid lg:grid-cols-3 gap-4 mb-4">
+              <div className="grid lg:grid-cols-3 gap-3 mb-3">
                 <div className="lg:col-span-2">
                   <ScanControls 
                     onScan={scanMarkets}
@@ -277,7 +277,7 @@ const Index = () => {
                 <>
                   <MetricCards signals={signals} />
                   
-                  <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="grid lg:grid-cols-4 gap-3">
                     <div className="lg:col-span-3">
                       <SignalFilters
                         signalFilter={signalFilter}
@@ -295,7 +295,7 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="grid lg:grid-cols-4 gap-3">
                     <div className="lg:col-span-3">
                       <PerformanceStats />
                     </div>

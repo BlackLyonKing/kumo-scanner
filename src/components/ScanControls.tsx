@@ -70,9 +70,9 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
   };
 
   return (
-    <div className="w-full mb-8 animate-fade-in">
+    <div className="w-full animate-fade-in">
       <Card className="glass-card border border-border/50">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3">
           <CardTitle className="text-xl flex items-center gap-2">
             <div className="p-2 bg-primary/20 rounded-lg">
               <RefreshCw className="h-5 w-5 text-primary" />
@@ -83,7 +83,7 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
             Choose your scan type and start analyzing market opportunities
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {/* Scan Type Selection */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-foreground">
