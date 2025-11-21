@@ -8,6 +8,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 import CryptoPayment from '@/components/CryptoPayment';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Gift } from 'lucide-react';
 
 const Subscribe = () => {
   const navigate = useNavigate();
@@ -88,6 +90,14 @@ const Subscribe = () => {
               ? `${subscription.trialDaysRemaining} days left in your trial. Upgrade to continue accessing premium features.`
               : 'Start your 7-day free trial. No credit card required.'}
           </p>
+          
+          <Alert className="max-w-2xl mx-auto border-primary/20 bg-primary/5">
+            <Gift className="h-4 w-4 text-primary" />
+            <AlertDescription>
+              💡 <strong>Pro tip:</strong> Use a referral code to get 7 extra days! 
+              Check the Referrals tab after signing up.
+            </AlertDescription>
+          </Alert>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">

@@ -630,6 +630,45 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          referred_email: string | null
+          referred_wallet: string | null
+          referrer_code: string
+          referrer_wallet: string
+          reward_days: number | null
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referred_email?: string | null
+          referred_wallet?: string | null
+          referrer_code: string
+          referrer_wallet: string
+          reward_days?: number | null
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referred_email?: string | null
+          referred_wallet?: string | null
+          referrer_code?: string
+          referrer_wallet?: string
+          reward_days?: number | null
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -833,6 +872,33 @@ export type Database = {
           preferred_timeframes?: string[] | null
           theme?: string | null
           updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      user_referral_codes: {
+        Row: {
+          created_at: string | null
+          id: string
+          referral_code: string
+          total_days_earned: number | null
+          total_referrals: number | null
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referral_code: string
+          total_days_earned?: number | null
+          total_referrals?: number | null
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referral_code?: string
+          total_days_earned?: number | null
+          total_referrals?: number | null
           wallet_address?: string
         }
         Relationships: []
@@ -1059,6 +1125,7 @@ export type Database = {
     }
     Functions: {
       create_wallet_trial: { Args: { wallet_addr: string }; Returns: string }
+      generate_referral_code: { Args: { wallet_addr: string }; Returns: string }
       has_role:
         | {
             Args: {
