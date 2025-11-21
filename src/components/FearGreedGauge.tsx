@@ -1,12 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FearGreedGaugeProps {
   value?: number; // 0-100
+  isLoading?: boolean;
 }
 
-export const FearGreedGauge = ({ value = 16 }: FearGreedGaugeProps) => {
+export const FearGreedGauge = ({ value = 16, isLoading = false }: FearGreedGaugeProps) => {
   // Calculate sentiment level and color
   const sentiment = useMemo(() => {
     if (value <= 20) return { label: "Extreme Fear", color: "text-signal-short" };
@@ -28,12 +30,31 @@ export const FearGreedGauge = ({ value = 16 }: FearGreedGaugeProps) => {
     return "hsl(142, 76%, 48%)"; // Green
   };
 
+  if (isLoading) {
+    return (
+      <Card className="metric-card border-border/50">
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground mb-1">Fear & Greed</p>
+            <Skeleton className="h-[110px] w-full" />
+            <div className="text-center space-y-1">
+              <Skeleton className="h-8 w-16 mx-auto" />
+              <Skeleton className="h-4 w-24 mx-auto" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="metric-card border-border/50">
       <CardContent className="p-4">
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Fear & Greed</p>
+            <p className="text-xs text-muted-foreground mb-1">
+              Fear & Greed Index
+            </p>
           </div>
           
           {/* Gauge */}
