@@ -46,8 +46,8 @@ const DetailedSignalView = ({ signal, onFetchChartData }: DetailedSignalViewProp
             <Eye className="h-4 w-4 group-hover:text-primary transition-colors duration-300" />
             <span className="font-medium">View Details</span>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300 pointer-events-none" />
         </Button>
       </DialogTrigger>
       

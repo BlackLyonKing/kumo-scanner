@@ -108,7 +108,7 @@ const GeminiAnalysis = ({ signals }: GeminiAnalysisProps) => {
 
   return (
     <Card className="glass-card animate-fade-in overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/5 pointer-events-none" />
       <CardHeader className="relative">
         <CardTitle className="flex items-center gap-3 text-foreground">
           <div className="p-2 rounded-xl bg-gradient-to-br from-accent to-primary/80">

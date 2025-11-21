@@ -155,7 +155,7 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
   if (isLoading || signals.length === 0) {
     return (
       <Card className="glass-card animate-fade-in overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
         <CardContent className="relative p-12">
           <div className="text-center space-y-4">
             {isLoading ? (
@@ -186,7 +186,7 @@ const SignalsTable = ({ signals, isLoading, statusMessage }: SignalsTableProps) 
 
   return (
     <Card className="glass-card animate-fade-in overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       <CardContent className="relative p-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-border/50 bg-card/50 backdrop-blur-sm">
           <div>
