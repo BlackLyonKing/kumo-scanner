@@ -73,7 +73,7 @@ const NotificationSettings = () => {
 
   return (
     <Card className="glass-card animate-fade-in overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-success/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-success/5 pointer-events-none" />
       <CardHeader className="relative">
         <CardTitle className="flex items-center gap-3 text-foreground">
           <div className={cn(
