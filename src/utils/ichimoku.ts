@@ -367,36 +367,7 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
     // Apply rate limiting to prevent API abuse
     await rateLimiter.throttle();
     
-    // Strategy 1: Try CryptoCompare API first (free, reliable, no auth needed)
-    try {
-      console.log(`📊 Trying CryptoCompare API for ${symbol}...`);
-      const ccResponse = await fetchWithRetry(
-        `${CRYPTOCOMPARE_API_URL}?fsym=${baseCurrency}&tsym=${quoteCurrency}&limit=${limit}`,
-        { method: 'GET' },
-        2, 1000
-      );
-      
-      if (ccResponse.ok) {
-        const ccData = await ccResponse.json();
-        
-        if (ccData.Response === 'Success' && ccData.Data?.Data) {
-          console.log(`✅ CryptoCompare: Retrieved ${ccData.Data.Data.length} candles for ${symbol}`);
-          
-          return ccData.Data.Data.map((candle: any) => ({
-            timestamp: candle.time * 1000, // Convert to milliseconds
-            open: candle.open,
-            high: candle.high,
-            low: candle.low,
-            close: candle.close,
-            volume: candle.volumeto || 0
-          }));
-        }
-      }
-    } catch (ccError) {
-      console.warn(`⚠️ CryptoCompare failed for ${symbol}, trying Binance...`);
-    }
-    
-    // Strategy 2: Fallback to Binance API
+    // Strategy 1: Try Binance API first (most reliable, no rate limits)
     const isPhemexSymbol = symbol.includes('USD') && !symbol.includes('USDT');
     
     if (!isPhemexSymbol) {
@@ -420,8 +391,37 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
           }));
         }
       } catch (binanceError) {
-        console.warn(`⚠️ Binance failed for ${symbol}, trying Phemex...`);
+        console.warn(`⚠️ Binance failed for ${symbol}, trying CryptoCompare...`);
       }
+    }
+    
+    // Strategy 2: Fallback to CryptoCompare API
+    try {
+      console.log(`📊 Trying CryptoCompare API for ${symbol}...`);
+      const ccResponse = await fetchWithRetry(
+        `${CRYPTOCOMPARE_API_URL}?fsym=${baseCurrency}&tsym=${quoteCurrency}&limit=${limit}`,
+        { method: 'GET' },
+        2, 1000
+      );
+      
+      if (ccResponse.ok) {
+        const ccData = await ccResponse.json();
+        
+        if (ccData.Response === 'Success' && ccData.Data?.Data) {
+          console.log(`✅ CryptoCompare: Retrieved ${ccData.Data.Data.length} candles for ${symbol}`);
+          
+          return ccData.Data.Data.map((candle: any) => ({
+            timestamp: candle.time * 1000,
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+            volume: candle.volumeto || 0
+          }));
+        }
+      }
+    } catch (ccError) {
+      console.warn(`⚠️ CryptoCompare failed for ${symbol}, trying Phemex...`);
     }
     
     // Strategy 3: Fallback to Phemex API for USD symbols
