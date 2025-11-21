@@ -41,6 +41,7 @@ import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
 import { AdminPanel } from "@/components/AdminPanel";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { MetricCards } from "@/components/MetricCards";
+import { TrialStatusBanner } from "@/components/TrialStatusBanner";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -238,6 +239,7 @@ const Index = () => {
           </div>
           <ThemeToggle />
         </div>
+        <TrialStatusBanner />
         <VpnNotice />
         <RiskWarning />
         
@@ -336,12 +338,14 @@ const Index = () => {
           </TabsContent>
           
           <TabsContent value="analysis" className="space-y-4 mt-4">
-            <MultiTimeframeDemo />
-            
-            <div className="grid lg:grid-cols-2 gap-4">
-              <NotificationSettings />
-              <GeminiAnalysis signals={filteredAndSortedSignals} />
-            </div>
+            <SubscriptionGate feature="Premium Analysis Tools">
+              <MultiTimeframeDemo />
+              
+              <div className="grid lg:grid-cols-2 gap-4">
+                <NotificationSettings />
+                <GeminiAnalysis signals={filteredAndSortedSignals} />
+              </div>
+            </SubscriptionGate>
           </TabsContent>
           
           <TabsContent value="education" className="space-y-4 mt-4">
