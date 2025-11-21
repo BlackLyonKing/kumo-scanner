@@ -4,12 +4,15 @@ import { TrendingUp, TrendingDown, Activity, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FearGreedGauge } from "./FearGreedGauge";
 import { AltcoinSeasonMeter } from "./AltcoinSeasonMeter";
+import { useFearGreedIndex } from "@/hooks/useFearGreedIndex";
 
 interface MetricCardsProps {
   signals: TradingSignal[];
 }
 
 export const MetricCards = ({ signals }: MetricCardsProps) => {
+  const { data: fearGreedValue, isLoading: isFearGreedLoading } = useFearGreedIndex();
+  
   const longSignals = signals.filter(s => s.signal === 'Long Signal').length;
   const shortSignals = signals.filter(s => s.signal === 'Short Signal').length;
   const gradeASignals = signals.filter(s => s.signalGrade === 'A').length;
@@ -87,8 +90,11 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
         </Card>
       ))}
       
-      {/* Fear & Greed Gauge */}
-      <FearGreedGauge value={calculateMarketSentiment()} />
+      {/* Fear & Greed Gauge - Uses real API data or falls back to calculated sentiment */}
+      <FearGreedGauge 
+        value={fearGreedValue ?? calculateMarketSentiment()} 
+        isLoading={isFearGreedLoading}
+      />
       
       {/* Altcoin Season Meter */}
       <AltcoinSeasonMeter signals={signals} />
