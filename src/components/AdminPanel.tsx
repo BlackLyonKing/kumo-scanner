@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Trash2, UserPlus, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PaymentTester } from '@/components/PaymentTester';
 
 interface PermanentAccessGrant {
   id: string;
@@ -133,6 +134,8 @@ export const AdminPanel = () => {
 
   return (
     <div className="space-y-6">
+      <PaymentTester />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

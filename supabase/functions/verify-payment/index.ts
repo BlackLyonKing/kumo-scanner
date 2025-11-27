@@ -27,6 +27,9 @@ Deno.serve(async (req) => {
 
     console.log('Verifying payment:', { transactionHash, cryptoCurrency, walletAddress });
 
+    // TEST MODE: Allow test transaction hashes for development
+    const isTestTransaction = transactionHash.startsWith('TEST_');
+    
     // Get the expected payment addresses
     const WALLET_ADDRESSES = {
       ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
@@ -51,7 +54,11 @@ Deno.serve(async (req) => {
     let isValid = false;
     let txDetails: any = null;
 
-    if (cryptoCurrency === 'ETH') {
+    // TEST MODE: Automatically approve test transactions
+    if (isTestTransaction) {
+      console.log('TEST MODE: Bypassing blockchain verification for test transaction');
+      isValid = true;
+    } else if (cryptoCurrency === 'ETH') {
       isValid = await verifyEthTransaction(transactionHash, expectedAddress, plan.price_usd);
     } else if (cryptoCurrency === 'SOL') {
       isValid = await verifySolanaTransaction(transactionHash, expectedAddress, plan.price_usd);
