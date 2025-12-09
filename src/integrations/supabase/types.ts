@@ -1130,14 +1130,14 @@ export type Database = {
         | {
             Args: {
               _role: Database["public"]["Enums"]["app_role"]
-              _wallet_address: string
+              _user_id: string
             }
             Returns: boolean
           }
         | {
             Args: {
               _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
+              _wallet_address: string
             }
             Returns: boolean
           }
