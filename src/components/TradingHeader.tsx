@@ -1,6 +1,7 @@
 import { Activity, TrendingUp, Sparkles } from "lucide-react";
 import WalletConnect from "./WalletConnect";
 import ApiHealthIndicator from "./ApiHealthIndicator";
+import { TrialCountdown } from "./TrialCountdown";
 import blkLogo from "/lovable-uploads/b1afa972-7ed7-4b6c-8fa9-e150b28a48e3.png";
 
 const TradingHeader = () => {
@@ -8,9 +9,10 @@ const TradingHeader = () => {
     <header className="relative text-center mb-4 animate-fade-in">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-3xl blur-3xl pointer-events-none" />
       <div className="relative">
-        {/* Top row with wallet connection and API health */}
-        <div className="flex justify-between items-center mb-2">
+        {/* Top row with wallet connection, trial countdown and API health */}
+        <div className="flex justify-between items-center mb-2 gap-2">
           <ApiHealthIndicator />
+          <TrialCountdown />
           <WalletConnect />
         </div>
         
