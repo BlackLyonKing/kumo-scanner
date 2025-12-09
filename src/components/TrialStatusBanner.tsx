@@ -11,6 +11,25 @@ export const TrialStatusBanner: React.FC = () => {
 
   if (loading || !subscription) return null;
 
+  // Show active trial status (more than 3 days remaining)
+  if (subscription.isTrial && subscription.trialDaysRemaining > 3) {
+    return (
+      <Alert className="border-primary/50 bg-primary/10">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <AlertDescription className="flex items-center justify-between">
+          <div className="flex-1">
+            <span className="font-medium text-primary">
+              🎉 Free Trial Active
+            </span>
+            <span className="text-sm text-muted-foreground ml-2">
+              {subscription.trialDaysRemaining} days remaining — enjoy all premium features!
+            </span>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   // Show warning when trial has 3 or fewer days remaining
   if (subscription.isTrial && subscription.trialDaysRemaining <= 3 && subscription.trialDaysRemaining > 0) {
     return (
@@ -19,7 +38,7 @@ export const TrialStatusBanner: React.FC = () => {
         <AlertDescription className="flex items-center justify-between">
           <div className="flex-1">
             <span className="font-medium">
-              Your trial expires in {subscription.trialDaysRemaining} day{subscription.trialDaysRemaining !== 1 ? 's' : ''}
+              Your free trial expires in {subscription.trialDaysRemaining} day{subscription.trialDaysRemaining !== 1 ? 's' : ''}
             </span>
             <span className="text-sm text-muted-foreground ml-2">
               Upgrade now to keep access to premium features
