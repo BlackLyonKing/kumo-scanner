@@ -287,7 +287,6 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-3 mt-3">
-            <SubscriptionGate feature="the Premium Scanner">
               <div className="grid lg:grid-cols-3 gap-3 mb-3">
                 <div className="lg:col-span-2">
                   <ScanControls 
@@ -349,7 +348,6 @@ const Index = () => {
               isLoading={isScanning && signals.length === 0}
               statusMessage={statusMessage}
             />
-            </SubscriptionGate>
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-4 mt-4">
