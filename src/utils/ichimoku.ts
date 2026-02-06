@@ -44,6 +44,28 @@ const rateLimiter = new RateLimiter();
 
 export let SYMBOLS: string[] = [];
 
+// Top 50 USDT trading pairs by volume (hardcoded fallback)
+const TOP_50_USDT_PAIRS = [
+  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'SOLUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT',
+  'DOTUSDT', 'MATICUSDT', 'LINKUSDT', 'LTCUSDT', 'UNIUSDT', 'ATOMUSDT', 'ETCUSDT', 'XLMUSDT',
+  'VETUSDT', 'FILUSDT', 'TRXUSDT', 'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT', 'INJUSDT',
+  'LDOUSDT', 'AAVEUSDT', 'MKRUSDT', 'GRTUSDT', 'SHIBUSDT', 'PEPEUSDT', 'FTMUSDT', 'ALGOUSDT',
+  'SANDUSDT', 'AXSUSDT', 'MANAUSDT', 'THETAUSDT', 'EOSUSDT', 'XMRUSDT', 'ICPUSDT', 'RNDRUSDT',
+  'IMXUSDT', 'SUIUSDT', 'SEIUSDT', 'TIAUSDT', 'JUPUSDT', 'WLDUSDT', 'STXUSDT', 'RUNEUSDT',
+  'ONDOUSDT', 'PENDLEUSDT'
+];
+
+// Top 50 futures pairs (hardcoded fallback)
+const TOP_50_FUTURES_PAIRS = [
+  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'SOLUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT',
+  'DOTUSDT', 'MATICUSDT', 'LINKUSDT', 'LTCUSDT', 'UNIUSDT', 'ATOMUSDT', 'ETCUSDT', 'XLMUSDT',
+  'FILUSDT', 'TRXUSDT', 'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT', 'INJUSDT', 'LDOUSDT',
+  'AAVEUSDT', 'MKRUSDT', 'GRTUSDT', 'SHIBUSDT', 'PEPEUSDT', 'FTMUSDT', 'ALGOUSDT', 'SANDUSDT',
+  'AXSUSDT', 'MANAUSDT', 'THETAUSDT', 'EOSUSDT', 'ICPUSDT', 'RNDRUSDT', 'IMXUSDT', 'SUIUSDT',
+  'SEIUSDT', 'TIAUSDT', 'JUPUSDT', 'WLDUSDT', 'STXUSDT', 'RUNEUSDT', 'ONDOUSDT', 'PENDLEUSDT',
+  'WIFUSDT', 'BONKUSDT'
+];
+
 // Configuration for different base currencies and limits
 export interface ScanConfig {
   baseCurrencies: string[];
@@ -65,66 +87,18 @@ export async function getUsdtSymbols(): Promise<string[]> {
   return getTradingSymbols(DEFAULT_SCAN_CONFIG);
 }
 
-// Get Binance futures symbols
+// Get Binance futures symbols - uses hardcoded fallback
 async function getBinanceFuturesSymbols(config: ScanConfig): Promise<string[]> {
-  try {
-    const response = await fetch(BINANCE_FUTURES_URL);
-    const data = await response.json();
-    
-    if (response.ok) {
-      return data.symbols
-        .filter((symbol: any) => {
-          const isTrading = symbol.status === 'TRADING';
-          const isContract = symbol.contractType === 'PERPETUAL';
-          const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
-          
-          if (!config.includeStablecoins) {
-            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
-            const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
-            return isTrading && isContract && hasBaseCurrency && !isStablecoin;
-          }
-          
-          return isTrading && isContract && hasBaseCurrency;
-        })
-        .map((symbol: any) => symbol.symbol)
-        .sort();
-    }
-    return [];
-  } catch (error) {
-    console.error('Failed to fetch Binance futures symbols:', error);
-    return [];
-  }
+  console.log('📊 Using hardcoded top 50 futures pairs (API bypass for reliability)');
+  return TOP_50_FUTURES_PAIRS.slice(0, config.maxSymbols);
 }
 
-// Get Binance spot symbols
+// Get Binance spot symbols - uses hardcoded fallback  
 async function getBinanceSpotSymbols(config: ScanConfig): Promise<string[]> {
-  try {
-    const response = await fetch(BINANCE_SYMBOLS_URL);
-    const data = await response.json();
-    
-    if (response.ok) {
-      return data.symbols
-        .filter((symbol: any) => {
-          const isTrading = symbol.status === 'TRADING';
-          const hasBaseCurrency = config.baseCurrencies.includes(symbol.quoteAsset);
-          
-          if (!config.includeStablecoins) {
-            const stablecoins = ['USDC', 'BUSD', 'DAI', 'TUSD', 'PAX', 'USDD'];
-            const isStablecoin = stablecoins.some(stable => symbol.baseAsset === stable);
-            return isTrading && hasBaseCurrency && !isStablecoin;
-          }
-          
-          return isTrading && hasBaseCurrency;
-        })
-        .map((symbol: any) => symbol.symbol)
-        .sort();
-    }
-    return [];
-  } catch (error) {
-    console.error('Failed to fetch Binance spot symbols:', error);
-    return [];
-  }
+  console.log('📊 Using hardcoded top 50 spot pairs (API bypass for reliability)');
+  return TOP_50_USDT_PAIRS.slice(0, config.maxSymbols);
 }
+
 
 // Get Phemex symbols (futures) - Enhanced with better error handling and debugging
 async function getPhemexSymbols(config: ScanConfig): Promise<string[]> {
@@ -336,35 +310,7 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
     // Apply rate limiting to prevent API abuse
     await rateLimiter.throttle();
     
-    // Strategy 1: Try Binance API first (most reliable, no rate limits)
-    const isPhemexSymbol = symbol.includes('USD') && !symbol.includes('USDT');
-    
-    if (!isPhemexSymbol) {
-      try {
-        console.log(`📈 Trying Binance API for ${symbol}...`);
-        const binanceUrl = `${BINANCE_API_URL}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-        
-        const binanceResponse = await fetchWithRetry(binanceUrl, { method: 'GET' }, 3, 2000);
-        
-        if (binanceResponse.ok) {
-          const binanceData = await binanceResponse.json();
-          console.log(`✅ Binance: Retrieved ${binanceData.length} candles for ${symbol}`);
-          
-          return binanceData.map((row: any[]) => ({
-            timestamp: row[0],
-            open: parseFloat(row[1]),
-            high: parseFloat(row[2]),
-            low: parseFloat(row[3]),
-            close: parseFloat(row[4]),
-            volume: parseFloat(row[5])
-          }));
-        }
-      } catch (binanceError) {
-        console.warn(`⚠️ Binance failed for ${symbol}, trying CryptoCompare...`);
-      }
-    }
-    
-    // Strategy 2: Fallback to CryptoCompare API
+    // Strategy 1: Try CryptoCompare API first (no CORS issues)
     try {
       console.log(`📊 Trying CryptoCompare API for ${symbol}...`);
       const ccResponse = await fetchWithRetry(
@@ -390,48 +336,10 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
         }
       }
     } catch (ccError) {
-      console.warn(`⚠️ CryptoCompare failed for ${symbol}, trying Phemex...`);
-    }
-    
-    // Strategy 3: Fallback to Phemex API for USD symbols
-    if (isPhemexSymbol || quoteCurrency === 'USD') {
-      try {
-        const phemexSymbol = symbol.replace('USDT', 'USD');
-        const phemexInterval = interval === '1d' ? '86400' : (interval === '4h' ? '14400' : '3600');
-        
-        console.log(`📈 Trying Phemex API for ${phemexSymbol}...`);
-        
-        const phemexResponse = await fetchWithRetry(
-          withProxy(`https://api.phemex.com/md/kline?symbol=${phemexSymbol}&resolution=${phemexInterval}&limit=${limit}`),
-          { 
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          },
-          3, 2000
-        );
-        
-        if (phemexResponse.ok) {
-          const phemexData = await phemexResponse.json();
-          
-          if (phemexData.data?.rows && Array.isArray(phemexData.data.rows)) {
-            console.log(`✅ Phemex: Retrieved ${phemexData.data.rows.length} candles for ${phemexSymbol}`);
-            
-            return phemexData.data.rows.map((row: any[]) => ({
-              timestamp: row[0] * 1000,
-              open: row[1] / Math.pow(10, 8),
-              high: row[2] / Math.pow(10, 8),
-              low: row[3] / Math.pow(10, 8),
-              close: row[4] / Math.pow(10, 8),
-              volume: row[5] || 0
-            }));
-          }
-        }
-      } catch (phemexError) {
-        console.warn(`⚠️ Phemex failed for ${symbol}, trying BloFin...`);
-      }
+      console.warn(`⚠️ CryptoCompare failed for ${symbol}, trying BloFin...`);
     }
 
-    // Strategy 4: Try BloFin as final fallback
+    // Strategy 2: Try BloFin as fallback
     try {
       const blofinSymbol = symbol.replace('USDT', '-USDT');
       const blofinInterval = interval === '1d' ? '1D' : (interval === '4h' ? '4H' : '1H');
@@ -461,9 +369,9 @@ export async function fetchHistoricalData(symbol: string, interval: string = '1d
         }
       }
     } catch (blofinError) {
-      console.error(`❌ All API sources failed for ${symbol}`);
+      console.error(`❌ BloFin failed for ${symbol}`);
     }
-    
+
     console.error(`❌ No data sources available for ${symbol}`);
     return null;
     
