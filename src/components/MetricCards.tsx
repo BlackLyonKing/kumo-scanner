@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { TradingSignal } from "@/types/trading";
-import { TrendingUp, TrendingDown, Activity, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FearGreedGauge } from "./FearGreedGauge";
 import { AltcoinSeasonMeter } from "./AltcoinSeasonMeter";
@@ -17,80 +17,109 @@ export const MetricCards = ({ signals }: MetricCardsProps) => {
   const shortSignals = signals.filter(s => s.signal === 'Short Signal').length;
   const gradeASignals = signals.filter(s => s.signalGrade === 'A').length;
   const totalVolume = signals.reduce((acc, s) => acc + (s.volume24h || 0), 0);
+  const totalSignals = signals.length;
+  
+  // Calculate percentages
+  const longPercent = totalSignals > 0 ? Math.round((longSignals / totalSignals) * 100) : 0;
+  const shortPercent = totalSignals > 0 ? Math.round((shortSignals / totalSignals) * 100) : 0;
 
   const metrics = [
     {
       label: "Long Signals",
       value: longSignals,
+      subtitle: `${longPercent}% of total`,
       icon: TrendingUp,
+      trend: ArrowUpRight,
       color: "text-signal-long",
-      bgColor: "bg-signal-long/10",
+      bgGradient: "from-signal-long/20 to-signal-long/5",
+      iconBg: "bg-signal-long/15",
     },
     {
       label: "Short Signals",
       value: shortSignals,
+      subtitle: `${shortPercent}% of total`,
       icon: TrendingDown,
+      trend: ArrowDownRight,
       color: "text-signal-short",
-      bgColor: "bg-signal-short/10",
+      bgGradient: "from-signal-short/20 to-signal-short/5",
+      iconBg: "bg-signal-short/15",
     },
     {
-      label: "Grade A Signals",
+      label: "Grade A",
       value: gradeASignals,
+      subtitle: "High conviction",
       icon: Target,
+      trend: null,
       color: "text-primary",
-      bgColor: "bg-primary/10",
+      bgGradient: "from-primary/20 to-primary/5",
+      iconBg: "bg-primary/15",
     },
     {
       label: "24h Volume",
       value: `$${(totalVolume / 1000000).toFixed(1)}M`,
+      subtitle: "Total scanned",
       icon: Activity,
-      color: "text-accent",
-      bgColor: "bg-accent/10",
+      trend: null,
+      color: "text-foreground",
+      bgGradient: "from-muted/30 to-transparent",
+      iconBg: "bg-muted",
     },
   ];
 
-  // Calculate market sentiment based on signals
+  // Calculate market sentiment
   const calculateMarketSentiment = () => {
     if (signals.length === 0) return 50;
-    
-    // Base sentiment on signal distribution and grades
-    const longCount = longSignals;
-    const shortCount = shortSignals;
-    const totalSignals = signals.length;
-    
-    // Higher grade signals carry more weight
     const gradeALongs = signals.filter(s => s.signal === 'Long Signal' && s.signalGrade === 'A').length;
     const gradeAShorts = signals.filter(s => s.signal === 'Short Signal' && s.signalGrade === 'A').length;
-    
-    // Calculate weighted sentiment (0-100)
-    const longRatio = (longCount / totalSignals) * 100;
+    const longRatio = (longSignals / totalSignals) * 100;
     const gradeABoost = ((gradeALongs - gradeAShorts) / Math.max(gradeASignals, 1)) * 15;
-    
-    const sentiment = Math.max(0, Math.min(100, longRatio + gradeABoost));
-    return Math.round(sentiment);
+    return Math.max(0, Math.min(100, Math.round(longRatio + gradeABoost)));
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
       {metrics.map((metric, index) => (
-        <Card key={index} className="metric-card border-border/50 overflow-hidden">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">{metric.label}</p>
-                <p className={cn("text-2xl font-bold", metric.color)}>
-                  {metric.value}
-                </p>
+        <Card 
+          key={index} 
+          className={cn(
+            "metric-card border-0 overflow-hidden group",
+            "bg-gradient-to-b",
+            metric.bgGradient
+          )}
+        >
+          <CardContent className="p-4 relative">
+            {/* Background icon */}
+            <div className="absolute -right-3 -bottom-3 opacity-5 group-hover:opacity-10 transition-opacity">
+              <metric.icon className={cn("h-20 w-20", metric.color)} />
+            </div>
+            
+            <div className="relative flex flex-col gap-2">
+              {/* Icon and label row */}
+              <div className="flex items-center justify-between">
+                <div className={cn("p-2 rounded-lg", metric.iconBg)}>
+                  <metric.icon className={cn("h-4 w-4", metric.color)} />
+                </div>
+                {metric.trend && (
+                  <metric.trend className={cn("h-4 w-4", metric.color)} />
+                )}
               </div>
-              <div className={cn("p-3 rounded-lg", metric.bgColor)}>
-                <metric.icon className={cn("h-5 w-5", metric.color)} />
+              
+              {/* Value */}
+              <div className={cn("text-2xl sm:text-3xl font-bold tracking-tight", metric.color)}>
+                {metric.value}
+              </div>
+              
+              {/* Label and subtitle */}
+              <div>
+                <p className="text-sm font-medium text-foreground/90">{metric.label}</p>
+                <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       ))}
       
-      {/* Fear & Greed Gauge - Uses real API data or falls back to calculated sentiment */}
+      {/* Fear & Greed Gauge */}
       <FearGreedGauge 
         value={fearGreedValue ?? calculateMarketSentiment()} 
         isLoading={isFearGreedLoading}

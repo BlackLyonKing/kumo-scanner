@@ -258,91 +258,113 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       <ReferralWelcomeModal 
         referralCode={welcomeReferralCode}
         onClose={() => setWelcomeReferralCode(null)}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-      <div className="container mx-auto px-4 sm:px-6 py-2 max-w-7xl relative z-10">
-        <div className="flex items-center justify-between mb-2">
+      
+      <div className="container mx-auto px-4 sm:px-6 py-4 max-w-7xl relative z-10">
+        {/* Header section */}
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex-1">
             <TradingHeader />
           </div>
           <ThemeToggle />
         </div>
-        <TrialStatusBanner />
-        <VpnNotice />
-        <RiskWarning />
         
-        <Tabs defaultValue="scanner" className="w-full mt-2">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'}`}>
-            <TabsTrigger value="scanner">Scanner</TabsTrigger>
-            <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
-            <TabsTrigger value="market">Market</TabsTrigger>
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="referrals">Referrals</TabsTrigger>
-            <TabsTrigger value="education">Learn</TabsTrigger>
-            {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
+        {/* Status banners */}
+        <div className="space-y-3 mb-6">
+          <TrialStatusBanner />
+          <VpnNotice />
+          <RiskWarning />
+        </div>
+        
+        {/* Main tabs */}
+        <Tabs defaultValue="scanner" className="w-full">
+          <TabsList className={`premium-tabs grid w-full gap-1 mb-6 h-auto p-1.5 ${isAdmin ? 'grid-cols-4 sm:grid-cols-7' : 'grid-cols-3 sm:grid-cols-6'}`}>
+            <TabsTrigger value="scanner" className="premium-tab data-[state=active]:shadow-lg">
+              Scanner
+            </TabsTrigger>
+            <TabsTrigger value="watchlist" className="premium-tab data-[state=active]:shadow-lg">
+              Watchlist
+            </TabsTrigger>
+            <TabsTrigger value="market" className="premium-tab data-[state=active]:shadow-lg">
+              Market
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="premium-tab data-[state=active]:shadow-lg">
+              Analysis
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="premium-tab data-[state=active]:shadow-lg">
+              Referrals
+            </TabsTrigger>
+            <TabsTrigger value="education" className="premium-tab data-[state=active]:shadow-lg">
+              Learn
+            </TabsTrigger>
+            {isAdmin && <TabsTrigger value="admin" className="premium-tab data-[state=active]:shadow-lg">Admin</TabsTrigger>}
           </TabsList>
           
-          <TabsContent value="scanner" className="space-y-3 mt-3">
-              <div className="grid lg:grid-cols-3 gap-3 mb-3">
-                <div className="lg:col-span-2">
-                  <ScanControls 
-                    onScan={scanMarkets}
-                    isScanning={isScanning}
-                    lastUpdated={lastUpdated}
-                  />
+          <TabsContent value="scanner" className="space-y-4 mt-0">
+            {/* Scanner controls */}
+            <div className="grid lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <ScanControls 
+                  onScan={scanMarkets}
+                  isScanning={isScanning}
+                  lastUpdated={lastUpdated}
+                />
+              </div>
+              <div>
+                <EntryTimer />
+              </div>
+            </div>
+            
+            {/* Scan progress */}
+            <ScanProgress 
+              currentSymbol={currentSymbol}
+              progress={scanProgress}
+              totalSymbols={SYMBOLS.length}
+              isVisible={isScanning}
+            />
+            
+            {/* Results section */}
+            {signals.length > 0 && (
+              <div className="space-y-4">
+                <MetricCards signals={signals} />
+                
+                <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-3">
+                    <SignalFilters
+                      signalFilter={signalFilter}
+                      gradeFilter={gradeFilter}
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSignalFilterChange={setSignalFilter}
+                      onGradeFilterChange={setGradeFilter}
+                      onSortByChange={setSortBy}
+                      onSortOrderChange={setSortOrder}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ExportSignals signals={filteredAndSortedSignals} />
+                  </div>
                 </div>
-                <div>
-                  <EntryTimer />
+                
+                <div className="grid lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-3">
+                    <PerformanceStats />
+                  </div>
+                  <div>
+                    <TimeframeTrendFilter 
+                      currentFilter={timeframeTrendFilter}
+                      onFilterChange={setTimeframeTrendFilter}
+                    />
+                  </div>
                 </div>
               </div>
-              
-              <ScanProgress 
-                currentSymbol={currentSymbol}
-                progress={scanProgress}
-                totalSymbols={SYMBOLS.length}
-                isVisible={isScanning}
-              />
-              
-              {signals.length > 0 && (
-                <>
-                  <MetricCards signals={signals} />
-                  
-                  <div className="grid lg:grid-cols-4 gap-3">
-                    <div className="lg:col-span-3">
-                      <SignalFilters
-                        signalFilter={signalFilter}
-                        gradeFilter={gradeFilter}
-                        sortBy={sortBy}
-                        sortOrder={sortOrder}
-                        onSignalFilterChange={setSignalFilter}
-                        onGradeFilterChange={setGradeFilter}
-                        onSortByChange={setSortBy}
-                        onSortOrderChange={setSortOrder}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ExportSignals signals={filteredAndSortedSignals} />
-                    </div>
-                  </div>
-                  
-                  <div className="grid lg:grid-cols-4 gap-3">
-                    <div className="lg:col-span-3">
-                      <PerformanceStats />
-                    </div>
-                    <div>
-                      <TimeframeTrendFilter 
-                        currentFilter={timeframeTrendFilter}
-                        onFilterChange={setTimeframeTrendFilter}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+            )}
             
+            {/* Signals table */}
             <SignalsTable 
               signals={filteredAndSortedSignals}
               isLoading={isScanning && signals.length === 0}

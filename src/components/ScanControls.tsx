@@ -1,9 +1,9 @@
-import { RefreshCw, Clock } from "lucide-react";
+import { RefreshCw, Clock, Zap, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AutoRefreshToggle from "./AutoRefreshToggle";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ScanControlsProps {
   onScan: (scanType?: string) => Promise<void>;
@@ -18,19 +18,19 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
     { 
       value: 'binance_spot', 
       label: 'Binance Spot', 
-      description: 'Top 50 USDT spot pairs on Binance',
+      description: 'Top 50 USDT spot pairs',
       tokens: '50'
     },
     { 
       value: 'binance_futures', 
       label: 'Binance Futures', 
-      description: 'Top 50 USDT perpetual futures',
+      description: 'Top 50 perpetual futures',
       tokens: '50'
     },
     { 
       value: 'phemex_futures', 
       label: 'Phemex Futures', 
-      description: 'Top 50 USD perpetual futures',
+      description: 'Top 50 USD perpetuals',
       tokens: '50'
     }
   ];
@@ -39,42 +39,40 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
     onScan(selectedScanType);
   };
 
+  const selectedOption = scanOptions.find(opt => opt.value === selectedScanType);
+
   return (
     <div className="w-full animate-fade-in">
-      <Card className="glass-card border border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <div className="p-2 bg-primary/20 rounded-lg">
-              <RefreshCw className="h-5 w-5 text-primary" />
-            </div>
-            Market Scanner Controls
-          </CardTitle>
-          <CardDescription>
-            Choose your scan type and start analyzing market opportunities
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Scan Type Selection */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">
-              Scan Configuration
+      <div className="glass-card p-5">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2.5 bg-primary/10 border border-primary/20 rounded-xl">
+            <Zap className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Market Scanner</h3>
+            <p className="text-sm text-muted-foreground">Analyze market opportunities in real-time</p>
+          </div>
+        </div>
+
+        {/* Controls grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Scan Type Select */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+              Exchange
             </label>
             <Select value={selectedScanType} onValueChange={setSelectedScanType}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select scan type" />
+              <SelectTrigger className="w-full h-11 bg-card border-border/50 hover:border-border transition-colors">
+                <SelectValue placeholder="Select exchange" />
               </SelectTrigger>
               <SelectContent>
                 {scanOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    <div className="flex flex-col py-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="font-medium">{option.label}</span>
-                        <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                          {option.tokens} tokens
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground mt-1">
-                        {option.description}
+                    <div className="flex items-center justify-between gap-6 py-0.5">
+                      <span className="font-medium">{option.label}</span>
+                      <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
+                        {option.tokens}
                       </span>
                     </div>
                   </SelectItem>
@@ -83,51 +81,54 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
             </Select>
           </div>
 
-          {/* Controls Row */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            {/* Last Updated Info */}
-            <div className="glass-card px-4 py-3 rounded-xl">
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <div className="p-2 bg-primary/20 rounded-lg">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <span className="text-sm font-medium">Last Market Scan:</span>
-                  <div className="font-mono text-foreground font-semibold">
-                    {lastUpdated || 'Not scanned yet'}
-                  </div>
-                </div>
-              </div>
+          {/* Last Updated */}
+          <div className="flex items-center gap-3 px-4 py-3 bg-card/50 border border-border/30 rounded-xl">
+            <div className="p-2 bg-muted rounded-lg">
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <AutoRefreshToggle 
-                onAutoScan={() => handleScan()} 
-                isScanning={isScanning} 
-              />
-              
-              <Button 
-                onClick={handleScan}
-                disabled={isScanning}
-                className="premium-button text-white font-bold py-3 px-6 sm:px-8 rounded-xl text-base sm:text-lg hover:scale-105 transition-all duration-300 disabled:hover:scale-100 disabled:opacity-60 min-h-[44px]"
-              >
-                {isScanning ? (
-                  <>
-                    <RefreshCw className="mr-3 h-5 w-5 animate-spin" />
-                    Scanning Markets...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-3 h-5 w-5" />
-                    Scan {scanOptions.find(opt => opt.value === selectedScanType)?.tokens} Tokens
-                  </>
-                )}
-              </Button>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Last scan</p>
+              <p className="text-sm font-mono font-medium text-foreground truncate">
+                {lastUpdated || 'Not scanned'}
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Auto Refresh */}
+          <div className="flex items-center">
+            <AutoRefreshToggle 
+              onAutoScan={() => handleScan()} 
+              isScanning={isScanning} 
+            />
+          </div>
+
+          {/* Scan Button */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Button 
+              onClick={handleScan}
+              disabled={isScanning}
+              className={cn(
+                "w-full h-11 text-base font-bold rounded-xl transition-all duration-300",
+                "bg-gradient-to-r from-primary to-primary/80",
+                "hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5",
+                "disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              )}
+            >
+              {isScanning ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Scan {selectedOption?.tokens} Tokens
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
