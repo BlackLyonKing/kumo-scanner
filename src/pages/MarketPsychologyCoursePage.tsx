@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CourseViewer from "@/components/CourseViewer";
 import { marketPsychologyCourse } from "@/data/marketPsychologyCourse";
+import marketPsychologyIntroVideo from "@/assets/videos/market-psychology-intro.mp4";
 
 const MarketPsychologyCoursePage = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const MarketPsychologyCoursePage = () => {
           </p>
         </div>
 
-        <CourseViewer modules={marketPsychologyCourse} />
+        <CourseViewer modules={marketPsychologyCourse} introVideo={marketPsychologyIntroVideo} />
       </div>
     </div>
   );
