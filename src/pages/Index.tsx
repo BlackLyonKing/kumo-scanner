@@ -152,7 +152,7 @@ const Index = () => {
     return filtered;
   }, [signals, signalFilter, gradeFilter, sortBy, sortOrder, timeframeTrendFilter]);
 
-  const scanMarkets = async (scanType: string = 'usdt_only') => {
+  const scanMarkets = async (scanType: string = 'binance_spot') => {
     setIsScanning(true);
     setStatusMessage('Fetching available symbols...');
     setSignals([]);
