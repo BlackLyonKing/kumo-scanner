@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CourseViewer from "@/components/CourseViewer";
 import { ichimokuCourse } from "@/data/ichimokuCourse";
+import ichimokuIntroVideo from "@/assets/videos/ichimoku-intro.mp4";
 
 const CoursePage = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const CoursePage = () => {
           </p>
         </div>
 
-        <CourseViewer modules={ichimokuCourse} />
+        <CourseViewer modules={ichimokuCourse} introVideo={ichimokuIntroVideo} />
       </div>
     </div>
   );

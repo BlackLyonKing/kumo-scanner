@@ -19,13 +19,20 @@ import {
 } from "lucide-react";
 import { CourseModule, CourseLesson } from "@/data/ichimokuCourse";
 import ReactMarkdown from 'react-markdown';
+import VideoPlayer from "@/components/VideoPlayer";
+
+// Import course intro videos
+import ichimokuIntroVideo from "@/assets/videos/ichimoku-intro.mp4";
+import chartPatternsIntroVideo from "@/assets/videos/chart-patterns-intro.mp4";
+import marketPsychologyIntroVideo from "@/assets/videos/market-psychology-intro.mp4";
 
 interface CourseViewerProps {
   modules: CourseModule[];
   onLessonChange?: (lessonTitle: string) => void;
+  introVideo?: string;
 }
 
-const CourseViewer = ({ modules, onLessonChange }: CourseViewerProps) => {
+const CourseViewer = ({ modules, onLessonChange, introVideo }: CourseViewerProps) => {
   const [selectedModule, setSelectedModule] = useState(modules[0]);
   const [selectedLesson, setSelectedLesson] = useState(modules[0].lessons[0]);
   const [expandedModules, setExpandedModules] = useState<string[]>([modules[0].id]);
@@ -163,13 +170,10 @@ const CourseViewer = ({ modules, onLessonChange }: CourseViewerProps) => {
               <div className="prose prose-sm max-w-none dark:prose-invert">
                 {selectedLesson.type === 'video' && (
                   <div className="mb-6">
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <PlayCircle className="h-16 w-16 text-primary mx-auto" />
-                        <p className="text-muted-foreground">Video player would load here</p>
-                        <p className="text-sm text-muted-foreground">Duration: {selectedLesson.duration}</p>
-                      </div>
-                    </div>
+                    <VideoPlayer 
+                      src={selectedLesson.videoUrl || introVideo || ichimokuIntroVideo}
+                      title={selectedLesson.title}
+                    />
                   </div>
                 )}
 

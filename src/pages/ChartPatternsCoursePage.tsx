@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CourseViewer from "@/components/CourseViewer";
 import { chartPatternsCourse } from "@/data/chartPatternsCourse";
+import chartPatternsIntroVideo from "@/assets/videos/chart-patterns-intro.mp4";
 
 const ChartPatternsCoursePage = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ChartPatternsCoursePage = () => {
           </p>
         </div>
 
-        <CourseViewer modules={chartPatternsCourse} />
+        <CourseViewer modules={chartPatternsCourse} introVideo={chartPatternsIntroVideo} />
       </div>
     </div>
   );
