@@ -67,12 +67,12 @@ const Index = () => {
   const { applyReferralCode } = useReferralData();
   const [welcomeReferralCode, setWelcomeReferralCode] = useState<string | null>(null);
 
-  // Check wallet connection
-  useEffect(() => {
-    if (!isConnected) {
-      navigate('/auth');
-    }
-  }, [isConnected, navigate]);
+  // Wallet connection check disabled for testing
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     navigate('/auth');
+  //   }
+  // }, [isConnected, navigate]);
 
   // Initialize wallet trial for new users
   useWalletTrial();
