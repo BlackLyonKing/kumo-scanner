@@ -301,58 +301,27 @@ export async function getTradingSymbols(config: ScanConfig = DEFAULT_SCAN_CONFIG
   }
 }
 
-// Preset configurations for different scan types
+// Preset configurations for different scan types - simplified to top 50 per exchange
 export const SCAN_PRESETS: Record<string, ScanConfig> = {
-  usdt_only: {
+  binance_spot: {
     baseCurrencies: ['USDT'],
     maxSymbols: 50,
     includeStablecoins: false,
     exchanges: ['binance']
   },
-  major_pairs: {
-    baseCurrencies: ['USDT', 'BTC', 'ETH'],
-    maxSymbols: 100,
-    includeStablecoins: false,
-    exchanges: ['binance']
-  },
-  comprehensive: {
-    baseCurrencies: ['USDT', 'BTC', 'ETH', 'BNB'],
-    maxSymbols: 200,
-    includeStablecoins: true,
-    exchanges: ['binance']
-  },
-  binance_futures_all: {
+  binance_futures: {
     baseCurrencies: ['USDT'],
-    maxSymbols: 300,
+    maxSymbols: 50,
     includeStablecoins: false,
     exchanges: ['binance-futures'],
     futuresOnly: true
   },
-  phemex_futures_all: {
+  phemex_futures: {
     baseCurrencies: ['USDT', 'USD'],
-    maxSymbols: 200,
+    maxSymbols: 50,
     includeStablecoins: false,
     exchanges: ['phemex'],
     futuresOnly: true
-  },
-  all_futures_combined: {
-    baseCurrencies: ['USDT', 'USD'],
-    maxSymbols: 500,
-    includeStablecoins: false,
-    exchanges: ['binance-futures', 'phemex'],
-    futuresOnly: true
-  },
-  btc_pairs: {
-    baseCurrencies: ['BTC'],
-    maxSymbols: 50,
-    includeStablecoins: false,
-    exchanges: ['binance']
-  },
-  eth_pairs: {
-    baseCurrencies: ['ETH'],
-    maxSymbols: 50,
-    includeStablecoins: false,
-    exchanges: ['binance']
   }
 };
 

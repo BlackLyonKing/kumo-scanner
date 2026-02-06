@@ -30,24 +30,17 @@ export const MarketData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Major cryptocurrencies that typically have futures trading available
-  const futuresTradableCoins = [
-    'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'cardano', 'solana', 
-    'avalanche-2', 'polkadot', 'dogecoin', 'polygon', 'chainlink', 'litecoin',
-    'uniswap', 'internet-computer', 'bitcoin-cash', 'ethereum-classic',
-    'stellar', 'vechain', 'filecoin', 'tron', 'monero', 'eos', 'aave',
-    'the-sandbox', 'axie-infinity', 'decentraland', 'theta-token', 'algorand',
-    'fantom', 'near', 'cosmos', 'apecoin', 'shiba-inu', 'render-token'
-  ];
+  // Top 50 cryptocurrencies by market cap - simplified list
+  const TOP_50_LIMIT = 50;
 
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
         setLoading(true);
         
-        // Fetch top coins data
+        // Fetch top 50 coins data
         const coinsResponse = await fetch(
-          'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false'
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${TOP_50_LIMIT}&page=1&sparkline=false`
         );
         
         if (!coinsResponse.ok) {
@@ -55,11 +48,6 @@ export const MarketData = () => {
         }
         
         const coinsData = await coinsResponse.json();
-        
-        // Filter for futures tradable coins only
-        const filteredCoins = coinsData.filter((coin: CoinData) => 
-          futuresTradableCoins.includes(coin.id)
-        );
         
         // Fetch global market stats
         const globalResponse = await fetch(
@@ -72,7 +60,7 @@ export const MarketData = () => {
         
         const globalData = await globalResponse.json();
         
-        setCoins(filteredCoins);
+        setCoins(coinsData);
         setMarketStats(globalData.data);
         setError(null);
       } catch (err) {
@@ -228,7 +216,7 @@ export const MarketData = () => {
         <TabsContent value="top" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Futures Tradable Cryptocurrencies</CardTitle>
+              <CardTitle>Top 50 Cryptocurrencies</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

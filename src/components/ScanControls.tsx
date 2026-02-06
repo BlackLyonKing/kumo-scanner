@@ -12,55 +12,25 @@ interface ScanControlsProps {
 }
 
 const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) => {
-  const [selectedScanType, setSelectedScanType] = useState('usdt_only');
+  const [selectedScanType, setSelectedScanType] = useState('binance_spot');
 
   const scanOptions = [
     { 
-      value: 'usdt_only', 
-      label: 'USDT Pairs Only', 
-      description: '~50 tokens - Standard USDT trading pairs',
+      value: 'binance_spot', 
+      label: 'Binance Spot', 
+      description: 'Top 50 USDT spot pairs on Binance',
       tokens: '50'
     },
     { 
-      value: 'major_pairs', 
-      label: 'Major Pairs', 
-      description: '~100 tokens - USDT, BTC, ETH pairs',
-      tokens: '100'
-    },
-    { 
-      value: 'binance_futures_all', 
-      label: 'Binance Futures (All)', 
-      description: '~300 tokens - All Binance perpetual futures',
-      tokens: '300'
-    },
-    { 
-      value: 'phemex_futures_all', 
-      label: 'Phemex Futures (All)', 
-      description: '~200 tokens - All Phemex perpetual futures',
-      tokens: '200'
-    },
-    { 
-      value: 'all_futures_combined', 
-      label: 'All Futures Combined', 
-      description: '~500 tokens - Binance + Phemex futures',
-      tokens: '500'
-    },
-    { 
-      value: 'comprehensive', 
-      label: 'Comprehensive Spot', 
-      description: '~200 tokens - All major base currencies',
-      tokens: '200'
-    },
-    { 
-      value: 'btc_pairs', 
-      label: 'BTC Pairs Only', 
-      description: '~50 tokens - Bitcoin trading pairs',
+      value: 'binance_futures', 
+      label: 'Binance Futures', 
+      description: 'Top 50 USDT perpetual futures',
       tokens: '50'
     },
     { 
-      value: 'eth_pairs', 
-      label: 'ETH Pairs Only', 
-      description: '~50 tokens - Ethereum trading pairs',
+      value: 'phemex_futures', 
+      label: 'Phemex Futures', 
+      description: 'Top 50 USD perpetual futures',
       tokens: '50'
     }
   ];
