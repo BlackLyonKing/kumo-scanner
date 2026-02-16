@@ -257,6 +257,12 @@
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   }
 
+  /* Terminal feed line */
+  .feed-line {
+    @apply font-mono text-xs;
+    animation: fade-in 0.2s ease-out;
+  }
+
   /* Gradient text */
   .text-gradient {
     background: linear-gradient(135deg, hsl(160 84% 50%) 0%, hsl(160 84% 70%) 100%);

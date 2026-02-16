@@ -40,8 +40,11 @@ const TradingHeader = () => {
                 <span className="text-foreground ml-2">Trading Tools</span>
               </h1>
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full">
-                <Activity className="h-3 w-3 text-primary" />
-                <span className="text-xs font-medium text-primary">Live</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span className="text-xs font-mono font-bold tracking-wider text-primary uppercase">Mesh Live</span>
               </div>
             </div>
             <p className="text-muted-foreground text-sm sm:text-base">
