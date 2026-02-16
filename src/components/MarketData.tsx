@@ -79,27 +79,34 @@ export const MarketData = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null) => {
+    if (price == null) return '$—';
     if (price < 0.01) return `$${price.toFixed(6)}`;
     if (price < 1) return `$${price.toFixed(4)}`;
     return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const formatMarketCap = (marketCap: number) => {
+  const formatMarketCap = (marketCap: number | null) => {
+    if (marketCap == null) return '$—';
     if (marketCap >= 1e12) return `$${(marketCap / 1e12).toFixed(2)}T`;
     if (marketCap >= 1e9) return `$${(marketCap / 1e9).toFixed(2)}B`;
     if (marketCap >= 1e6) return `$${(marketCap / 1e6).toFixed(2)}M`;
     return `$${marketCap.toLocaleString()}`;
   };
 
+  const formatChange = (val: number | null) => {
+    if (val == null) return '0.00';
+    return val.toFixed(2);
+  };
+
   const getTopGainers = () => coins
-    .filter(coin => coin.price_change_percentage_24h > 0)
-    .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+    .filter(coin => (coin.price_change_percentage_24h ?? 0) > 0)
+    .sort((a, b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0))
     .slice(0, 10);
 
   const getTopLosers = () => coins
-    .filter(coin => coin.price_change_percentage_24h < 0)
-    .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
+    .filter(coin => (coin.price_change_percentage_24h ?? 0) < 0)
+    .sort((a, b) => (a.price_change_percentage_24h ?? 0) - (b.price_change_percentage_24h ?? 0))
     .slice(0, 10);
 
   if (loading) {
@@ -156,7 +163,7 @@ export const MarketData = () => {
                 ) : (
                   <TrendingDown className="h-4 w-4 mr-1" />
                 )}
-                {Math.abs(marketStats.market_cap_change_percentage_24h_usd).toFixed(2)}%
+                {Math.abs(marketStats.market_cap_change_percentage_24h_usd ?? 0).toFixed(2)}%
               </p>
             </CardContent>
           </Card>
@@ -181,7 +188,7 @@ export const MarketData = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">BTC Dominance</p>
                   <p className="text-2xl font-bold">
-                    {marketStats.market_cap_percentage.btc.toFixed(1)}%
+                    {(marketStats.market_cap_percentage?.btc ?? 0).toFixed(1)}%
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-orange-500" />
@@ -195,7 +202,7 @@ export const MarketData = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">ETH Dominance</p>
                   <p className="text-2xl font-bold">
-                    {marketStats.market_cap_percentage.eth.toFixed(1)}%
+                    {(marketStats.market_cap_percentage?.eth ?? 0).toFixed(1)}%
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-blue-500" />
@@ -236,16 +243,16 @@ export const MarketData = () => {
                       <p className="font-medium">{formatPrice(coin.current_price)}</p>
                       <div className="flex items-center justify-end">
                         <Badge 
-                          variant={coin.price_change_percentage_24h >= 0 ? "default" : "destructive"}
+                          variant={(coin.price_change_percentage_24h ?? 0) >= 0 ? "default" : "destructive"}
                           className={cn(
                             "text-xs",
-                            coin.price_change_percentage_24h >= 0 
+                            (coin.price_change_percentage_24h ?? 0) >= 0 
                               ? "bg-green-100 text-green-700 hover:bg-green-100" 
                               : "bg-red-100 text-red-700 hover:bg-red-100"
                           )}
                         >
-                          {coin.price_change_percentage_24h >= 0 ? '+' : ''}
-                          {coin.price_change_percentage_24h.toFixed(2)}%
+                          {(coin.price_change_percentage_24h ?? 0) >= 0 ? '+' : ''}
+                          {formatChange(coin.price_change_percentage_24h)}%
                         </Badge>
                       </div>
                     </div>
@@ -278,7 +285,7 @@ export const MarketData = () => {
                     <div className="text-right">
                       <p className="font-medium">{formatPrice(coin.current_price)}</p>
                       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                        +{coin.price_change_percentage_24h.toFixed(2)}%
+                        +{formatChange(coin.price_change_percentage_24h)}%
                       </Badge>
                     </div>
                   </div>
@@ -310,7 +317,7 @@ export const MarketData = () => {
                     <div className="text-right">
                       <p className="font-medium">{formatPrice(coin.current_price)}</p>
                       <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-                        {coin.price_change_percentage_24h.toFixed(2)}%
+                        {formatChange(coin.price_change_percentage_24h)}%
                       </Badge>
                     </div>
                   </div>
