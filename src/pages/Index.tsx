@@ -45,6 +45,10 @@ import { TrialStatusBanner } from "@/components/TrialStatusBanner";
 import { ReferralDashboard } from "@/components/ReferralDashboard";
 import { useReferralData } from "@/hooks/useReferralData";
 import { ReferralWelcomeModal } from "@/components/ReferralWelcomeModal";
+import NeuralHuntFeed from "@/components/NeuralHuntFeed";
+import AutonomousNetWorth from "@/components/AutonomousNetWorth";
+import SentinelDirective from "@/components/SentinelDirective";
+import MeshStatus from "@/components/MeshStatus";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -270,7 +274,15 @@ const Index = () => {
           <div className="flex-1">
             <TradingHeader />
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            <MeshStatus isScanning={isScanning} signalCount={signals.length} />
+            <ThemeToggle />
+          </div>
+        </div>
+        
+        {/* Sentinel Directive */}
+        <div className="mb-4">
+          <SentinelDirective signals={signals} isScanning={isScanning} />
         </div>
         
         {/* Status banners */}
@@ -305,8 +317,11 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="scanner" className="space-y-4 mt-0">
-            {/* Scanner controls */}
-            <div className="grid lg:grid-cols-3 gap-4">
+            {/* Top row: Net worth + Scanner controls + Timer */}
+            <div className="grid lg:grid-cols-4 gap-4">
+              <div>
+                <AutonomousNetWorth signals={signals} />
+              </div>
               <div className="lg:col-span-2">
                 <ScanControls 
                   onScan={scanMarkets}
@@ -327,49 +342,59 @@ const Index = () => {
               isVisible={isScanning}
             />
             
-            {/* Results section */}
-            {signals.length > 0 && (
-              <div className="space-y-4">
-                <MetricCards signals={signals} />
+            {/* Neural Hunt Feed + Results */}
+            <div className="grid lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                {/* Results section */}
+                {signals.length > 0 && (
+                  <div className="space-y-4">
+                    <MetricCards signals={signals} />
+                    
+                    <div className="grid lg:grid-cols-4 gap-4">
+                      <div className="lg:col-span-3">
+                        <SignalFilters
+                          signalFilter={signalFilter}
+                          gradeFilter={gradeFilter}
+                          sortBy={sortBy}
+                          sortOrder={sortOrder}
+                          onSignalFilterChange={setSignalFilter}
+                          onGradeFilterChange={setGradeFilter}
+                          onSortByChange={setSortBy}
+                          onSortOrderChange={setSortOrder}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <ExportSignals signals={filteredAndSortedSignals} />
+                      </div>
+                    </div>
+                    
+                    <div className="grid lg:grid-cols-4 gap-4">
+                      <div className="lg:col-span-3">
+                        <PerformanceStats />
+                      </div>
+                      <div>
+                        <TimeframeTrendFilter 
+                          currentFilter={timeframeTrendFilter}
+                          onFilterChange={setTimeframeTrendFilter}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
-                <div className="grid lg:grid-cols-4 gap-4">
-                  <div className="lg:col-span-3">
-                    <SignalFilters
-                      signalFilter={signalFilter}
-                      gradeFilter={gradeFilter}
-                      sortBy={sortBy}
-                      sortOrder={sortOrder}
-                      onSignalFilterChange={setSignalFilter}
-                      onGradeFilterChange={setGradeFilter}
-                      onSortByChange={setSortBy}
-                      onSortOrderChange={setSortOrder}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ExportSignals signals={filteredAndSortedSignals} />
-                  </div>
-                </div>
-                
-                <div className="grid lg:grid-cols-4 gap-4">
-                  <div className="lg:col-span-3">
-                    <PerformanceStats />
-                  </div>
-                  <div>
-                    <TimeframeTrendFilter 
-                      currentFilter={timeframeTrendFilter}
-                      onFilterChange={setTimeframeTrendFilter}
-                    />
-                  </div>
-                </div>
+                {/* Signals table */}
+                <SignalsTable 
+                  signals={filteredAndSortedSignals}
+                  isLoading={isScanning && signals.length === 0}
+                  statusMessage={statusMessage}
+                />
               </div>
-            )}
-            
-            {/* Signals table */}
-            <SignalsTable 
-              signals={filteredAndSortedSignals}
-              isLoading={isScanning && signals.length === 0}
-              statusMessage={statusMessage}
-            />
+              
+              {/* Neural Hunt Feed sidebar */}
+              <div>
+                <NeuralHuntFeed signals={signals} isScanning={isScanning} />
+              </div>
+            </div>
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-4 mt-4">
