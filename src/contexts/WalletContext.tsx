@@ -10,6 +10,28 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 // WalletConnect project ID - get from https://cloud.walletconnect.com
 const WC_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
 
+// Public Solana RPC endpoints with CORS enabled — try in order
+const SOLANA_RPC_ENDPOINTS = [
+  'https://solana-rpc.publicnode.com',
+  'https://api.mainnet-beta.solana.com',
+  'https://rpc.ankr.com/solana',
+];
+
+// Best-effort balance fetch — never throws, returns "0" if all RPCs fail
+const fetchSolBalanceSafe = async (publicKey: PublicKey): Promise<string> => {
+  for (const endpoint of SOLANA_RPC_ENDPOINTS) {
+    try {
+      const connection = new Connection(endpoint, 'confirmed');
+      const lamports = await connection.getBalance(publicKey);
+      return (lamports / LAMPORTS_PER_SOL).toString();
+    } catch (err) {
+      console.warn(`Solana RPC ${endpoint} failed, trying next...`, err);
+    }
+  }
+  console.warn('All Solana RPCs failed — using balance "0"');
+  return '0';
+};
+
 interface WalletProviderProps {
   children: ReactNode;
 }
@@ -101,16 +123,15 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           if (!phantomProvider.isConnected) {
             try {
               const resp = await phantomProvider.connect({ onlyIfTrusted: false });
-              
-              // Get Solana balance using a public RPC endpoint that allows browser requests
-              const connection = new Connection('https://solana-rpc.publicnode.com');
+
+              // Get Solana balance with safe fallback (never throws)
               const publicKey = new PublicKey(resp.publicKey.toString());
-              const solBalance = await connection.getBalance(publicKey);
-              
+              const balance = await fetchSolBalanceSafe(publicKey);
+
               const walletData: ConnectedWallet = {
                 address: resp.publicKey.toString(),
                 chainId: 'solana-mainnet',
-                balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+                balance,
                 walletName,
                 chain: 'solana',
               };
