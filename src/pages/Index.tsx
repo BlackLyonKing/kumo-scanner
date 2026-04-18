@@ -49,6 +49,7 @@ import NeuralHuntFeed from "@/components/NeuralHuntFeed";
 import AutonomousNetWorth from "@/components/AutonomousNetWorth";
 import SentinelDirective from "@/components/SentinelDirective";
 import MeshStatus from "@/components/MeshStatus";
+import TerminalSidebar from "@/components/TerminalSidebar";
 
 const Index = () => {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
@@ -310,40 +311,31 @@ const Index = () => {
             {isAdmin && <TabsTrigger value="admin" className="premium-tab data-[state=active]:shadow-lg">Admin</TabsTrigger>}
           </TabsList>
           
-          <TabsContent value="scanner" className="space-y-4 mt-0">
-            {/* Top row: Net worth + Scanner controls + Timer */}
-            <div className="grid lg:grid-cols-4 gap-4">
-              <div>
-                <AutonomousNetWorth signals={signals} />
-              </div>
-              <div className="lg:col-span-2">
-                <ScanControls 
+          <TabsContent value="scanner" className="mt-0">
+            {/* Terminal layout: left sidebar + main feed */}
+            <div className="grid lg:grid-cols-[300px_1fr] gap-4">
+              {/* LEFT: Terminal sidebar */}
+              <TerminalSidebar signals={signals} isScanning={isScanning} />
+
+              {/* RIGHT: Main feed */}
+              <div className="space-y-4 min-w-0">
+                <ScanControls
                   onScan={scanMarkets}
                   isScanning={isScanning}
                   lastUpdated={lastUpdated}
                 />
-              </div>
-              <div>
-                <EntryTimer />
-              </div>
-            </div>
-            
-            {/* Scan progress */}
-            <ScanProgress 
-              currentSymbol={currentSymbol}
-              progress={scanProgress}
-              totalSymbols={SYMBOLS.length}
-              isVisible={isScanning}
-            />
-            
-            {/* Neural Hunt Feed + Results */}
-            <div className="grid lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                {/* Results section */}
+
+                <ScanProgress
+                  currentSymbol={currentSymbol}
+                  progress={scanProgress}
+                  totalSymbols={SYMBOLS.length}
+                  isVisible={isScanning}
+                />
+
                 {signals.length > 0 && (
-                  <div className="space-y-4">
+                  <>
                     <MetricCards signals={signals} />
-                    
+
                     <div className="grid lg:grid-cols-4 gap-4">
                       <div className="lg:col-span-3">
                         <SignalFilters
@@ -361,32 +353,33 @@ const Index = () => {
                         <ExportSignals signals={filteredAndSortedSignals} />
                       </div>
                     </div>
-                    
-                    <div className="grid lg:grid-cols-4 gap-4">
-                      <div className="lg:col-span-3">
-                        <PerformanceStats />
-                      </div>
-                      <div>
-                        <TimeframeTrendFilter 
-                          currentFilter={timeframeTrendFilter}
-                          onFilterChange={setTimeframeTrendFilter}
-                        />
-                      </div>
-                    </div>
-                  </div>
+
+                    <TimeframeTrendFilter
+                      currentFilter={timeframeTrendFilter}
+                      onFilterChange={setTimeframeTrendFilter}
+                    />
+                  </>
                 )}
-                
-                {/* Signals table */}
-                <SignalsTable 
+
+                {/* MOVING NOW / signals feed */}
+                <SignalsTable
                   signals={filteredAndSortedSignals}
                   isLoading={isScanning && signals.length === 0}
                   statusMessage={statusMessage}
                 />
-              </div>
-              
-              {/* Neural Hunt Feed sidebar */}
-              <div>
-                <NeuralHuntFeed signals={signals} isScanning={isScanning} />
+
+                {/* Secondary feed: Neural Hunt + Entry timer */}
+                <div className="grid lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2">
+                    <NeuralHuntFeed signals={signals} isScanning={isScanning} />
+                  </div>
+                  <div className="space-y-4">
+                    <AutonomousNetWorth signals={signals} />
+                    <EntryTimer />
+                  </div>
+                </div>
+
+                {signals.length > 0 && <PerformanceStats />}
               </div>
             </div>
           </TabsContent>
