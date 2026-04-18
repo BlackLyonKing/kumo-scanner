@@ -97,10 +97,23 @@ Deno.serve(async (req) => {
     const now = new Date();
     const subscriptionEnd = new Date(now);
     
-    if (plan.billing_cycle === 'monthly') {
-      subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
-    } else if (plan.billing_cycle === 'annual') {
-      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+    switch (plan.billing_cycle) {
+      case 'weekly':
+        subscriptionEnd.setDate(subscriptionEnd.getDate() + 7);
+        break;
+      case 'monthly':
+        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+        break;
+      case 'quarterly':
+        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 3);
+        break;
+      case 'annual':
+      case 'yearly':
+        subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+        break;
+      default:
+        // Fallback: 1 month
+        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
     }
 
     // Check for existing subscription
