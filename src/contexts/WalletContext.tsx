@@ -160,13 +160,12 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           } else {
             // Already connected, get existing connection
             const publicKey = phantomProvider.publicKey;
-            const connection = new Connection('https://solana-rpc.publicnode.com');
-            const solBalance = await connection.getBalance(publicKey);
-            
+            const balance = await fetchSolBalanceSafe(publicKey);
+
             const walletData: ConnectedWallet = {
               address: publicKey.toString(),
               chainId: 'solana-mainnet',
-              balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+              balance,
               walletName,
               chain: 'solana',
             };
@@ -198,16 +197,15 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           
           try {
             await solflareProvider.connect();
-            
-            // Get Solana balance
-            const connection = new Connection('https://solana-rpc.publicnode.com');
+
+            // Get Solana balance with safe fallback (never throws)
             const publicKey = new PublicKey(solflareProvider.publicKey.toString());
-            const solBalance = await connection.getBalance(publicKey);
-            
+            const balance = await fetchSolBalanceSafe(publicKey);
+
             const walletData: ConnectedWallet = {
               address: solflareProvider.publicKey.toString(),
               chainId: 'solana-mainnet',
-              balance: (solBalance / LAMPORTS_PER_SOL).toString(),
+              balance,
               walletName,
               chain: 'solana',
             };
