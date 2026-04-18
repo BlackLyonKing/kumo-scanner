@@ -368,15 +368,12 @@ const Index = () => {
                   statusMessage={statusMessage}
                 />
 
-                {/* Secondary feed: Neural Hunt + Entry timer */}
-                <div className="grid lg:grid-cols-3 gap-4">
-                  <div className="lg:col-span-2">
-                    <NeuralHuntFeed signals={signals} isScanning={isScanning} />
-                  </div>
-                  <div className="space-y-4">
-                    <AutonomousNetWorth signals={signals} />
-                    <EntryTimer />
-                  </div>
+                {/* Secondary feed: Neural Hunt full width, compact strip below */}
+                <NeuralHuntFeed signals={signals} isScanning={isScanning} />
+
+                <div className="grid lg:grid-cols-[300px_1fr] gap-4">
+                  <AutonomousNetWorth signals={signals} />
+                  <EntryTimer />
                 </div>
 
                 {signals.length > 0 && <PerformanceStats />}
