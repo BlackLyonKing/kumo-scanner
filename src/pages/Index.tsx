@@ -269,27 +269,21 @@ const Index = () => {
       />
       
       <div className="container mx-auto px-4 sm:px-6 py-4 max-w-7xl relative z-10">
-        {/* Header section */}
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div className="flex-1">
-            <TradingHeader />
-          </div>
-          <div className="flex items-center gap-3">
-            <MeshStatus isScanning={isScanning} signalCount={signals.length} />
-            <ThemeToggle />
-          </div>
-        </div>
-        
-        {/* Sentinel Directive */}
-        <div className="mb-4">
+        {/* Unified command bar */}
+        <TradingHeader isScanning={isScanning} signalCount={signals.length} />
+
+        {/* Sentinel directive */}
+        <div className="mb-3">
           <SentinelDirective signals={signals} isScanning={isScanning} />
         </div>
-        
-        {/* Status banners */}
-        <div className="space-y-3 mb-6">
+
+        {/* Compact status strip */}
+        <div className="grid sm:grid-cols-2 gap-2 mb-4">
           <TrialStatusBanner />
           <VpnNotice />
-          <RiskWarning />
+          <div className="sm:col-span-2">
+            <RiskWarning />
+          </div>
         </div>
         
         {/* Main tabs */}
