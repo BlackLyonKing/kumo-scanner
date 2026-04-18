@@ -1,4 +1,4 @@
-import { RefreshCw, Clock, Zap, ChevronDown } from "lucide-react";
+import { RefreshCw, Clock, Zap, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AutoRefreshToggle from "./AutoRefreshToggle";
@@ -9,9 +9,21 @@ interface ScanControlsProps {
   onScan: (scanType?: string) => Promise<void>;
   isScanning: boolean;
   lastUpdated: string | null;
+  scansRemaining?: number;
+  scanLimit?: number;
+  isPaid?: boolean;
+  limitReached?: boolean;
 }
 
-const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) => {
+const ScanControls = ({
+  onScan,
+  isScanning,
+  lastUpdated,
+  scansRemaining,
+  scanLimit,
+  isPaid,
+  limitReached,
+}: ScanControlsProps) => {
   const [selectedScanType, setSelectedScanType] = useState('binance_spot');
 
   const scanOptions = [
@@ -56,13 +68,31 @@ const ScanControls = ({ onScan, isScanning, lastUpdated }: ScanControlsProps) =>
             </div>
           </div>
 
-          {/* Last scan timestamp */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/30 rounded-md">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Last:</span>
-            <span className="text-xs font-mono font-medium text-foreground">
-              {lastUpdated || '—'}
-            </span>
+          {/* Right side: quota + last scan */}
+          <div className="flex items-center gap-2">
+            {!isPaid && typeof scansRemaining === 'number' && (
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-md border",
+                limitReached
+                  ? "bg-destructive/10 border-destructive/30 text-destructive"
+                  : scansRemaining <= 3
+                    ? "bg-warning/10 border-warning/30 text-warning"
+                    : "bg-primary/10 border-primary/30 text-primary"
+              )}>
+                <Lock className="h-3.5 w-3.5" />
+                <span className="text-xs font-mono font-semibold">
+                  {scansRemaining}/{scanLimit} trial scans left
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/30 rounded-md">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Last:</span>
+              <span className="text-xs font-mono font-medium text-foreground">
+                {lastUpdated || '—'}
+              </span>
+            </div>
           </div>
         </div>
 
