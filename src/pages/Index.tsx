@@ -36,6 +36,7 @@ import FAQ from "@/components/FAQ";
 import Testimonials from "@/components/Testimonials";
 import { useSignalAlerts } from "@/hooks/useSignalAlerts";
 import { useWalletTrial } from "@/hooks/useWalletTrial";
+import { useScanQuota } from "@/hooks/useScanQuota";
 import MultiTimeframeDemo from "@/components/MultiTimeframeDemo";
 import TimeframeTrendFilter from "@/components/TimeframeTrendFilter";
 import { AdminPanel } from "@/components/AdminPanel";
@@ -71,6 +72,7 @@ const Index = () => {
   const { isAdmin } = useAdminRole();
   const { applyReferralCode } = useReferralData();
   const [welcomeReferralCode, setWelcomeReferralCode] = useState<string | null>(null);
+  const scanQuota = useScanQuota();
 
   // Wallet connection check disabled for testing
   // useEffect(() => {
@@ -158,10 +160,22 @@ const Index = () => {
   }, [signals, signalFilter, gradeFilter, sortBy, sortOrder, timeframeTrendFilter]);
 
   const scanMarkets = async (scanType: string = 'binance_spot') => {
+    // Enforce 10-scan trial limit
+    if (scanQuota.limitReached) {
+      toast({
+        title: "Trial scan limit reached 🔒",
+        description: `You've used all ${scanQuota.limit} free trial scans. Upgrade to continue scanning.`,
+        variant: "destructive",
+      });
+      navigate('/subscribe');
+      return;
+    }
+
     setIsScanning(true);
     setStatusMessage('Fetching available symbols...');
     setSignals([]);
     setScanProgress(0);
+    scanQuota.incrementScan();
     
     try {
       // Get symbols based on selected scan type
@@ -323,6 +337,10 @@ const Index = () => {
                   onScan={scanMarkets}
                   isScanning={isScanning}
                   lastUpdated={lastUpdated}
+                  scansRemaining={scanQuota.scansRemaining}
+                  scanLimit={scanQuota.limit}
+                  isPaid={scanQuota.isPaid}
+                  limitReached={scanQuota.limitReached}
                 />
 
                 <ScanProgress
