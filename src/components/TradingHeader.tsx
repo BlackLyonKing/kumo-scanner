@@ -1,57 +1,62 @@
-import { Activity } from "lucide-react";
 import WalletConnect from "./WalletConnect";
 import ApiHealthIndicator from "./ApiHealthIndicator";
 import { TrialCountdown } from "./TrialCountdown";
+import MeshStatus from "./MeshStatus";
+import ThemeToggle from "./ThemeToggle";
 import blkLogo from "/lovable-uploads/b1afa972-7ed7-4b6c-8fa9-e150b28a48e3.png";
 
-const TradingHeader = () => {
+interface TradingHeaderProps {
+  isScanning?: boolean;
+  signalCount?: number;
+}
+
+const TradingHeader = ({ isScanning = false, signalCount = 0 }: TradingHeaderProps) => {
   return (
-    <header className="relative animate-fade-in">
+    <header className="relative animate-fade-in mb-4">
       {/* Subtle ambient glow */}
       <div className="absolute -inset-4 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 blur-3xl pointer-events-none opacity-60" />
-      
-      <div className="relative">
-        {/* Top bar with status indicators */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <ApiHealthIndicator />
-          <TrialCountdown />
-          <WalletConnect />
-        </div>
-        
-        {/* Main branding */}
-        <div className="flex items-center gap-5">
-          {/* Logo */}
-          <div className="relative group">
-            <div className="absolute -inset-2 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative p-3 bg-gradient-to-br from-card to-card/80 border border-border/50 rounded-2xl">
-              <img 
-                src={blkLogo} 
-                alt="B.L.K Trading Tools" 
-                className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
-              />
-            </div>
+
+      {/* Single unified command bar */}
+      <div className="relative glass-card px-4 py-3 flex items-center gap-4 flex-wrap">
+        {/* Brand */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative shrink-0 p-1.5 bg-gradient-to-br from-card to-card/80 border border-border/50 rounded-xl">
+            <img
+              src={blkLogo}
+              alt="B.L.K Trading Tools"
+              className="h-8 w-8 object-contain"
+            />
           </div>
-          
-          {/* Title and tagline */}
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-none">
                 <span className="text-gradient">B.L.K</span>
-                <span className="text-foreground ml-2">Trading Tools</span>
+                <span className="text-foreground ml-1.5">Trading</span>
               </h1>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded-full">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                 </span>
-                <span className="text-xs font-mono font-bold tracking-wider text-primary uppercase">Mesh Live</span>
+                <span className="text-[9px] font-mono font-bold tracking-wider text-primary uppercase">Live</span>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Advanced Ichimoku analysis for{" "}
-              <span className="text-primary font-medium">high-probability</span> signals
+            <p className="text-muted-foreground text-xs leading-tight mt-0.5 hidden sm:block">
+              Ichimoku analysis · <span className="text-primary">high-probability</span> signals
             </p>
           </div>
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Status cluster */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <ApiHealthIndicator />
+          <MeshStatus isScanning={isScanning} signalCount={signalCount} />
+          <TrialCountdown />
+          <WalletConnect />
+          <ThemeToggle />
         </div>
       </div>
     </header>
