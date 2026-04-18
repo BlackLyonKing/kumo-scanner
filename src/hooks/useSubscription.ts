@@ -39,9 +39,9 @@ export const useSubscription = () => {
       // Check if wallet has permanent access grant
       const { data: permanentAccess } = await supabase
         .from('permanent_access_grants')
-        .select('*')
+        .select('id')
         .eq('wallet_address', wallet.address)
-        .single();
+        .maybeSingle();
 
       if (permanentAccess) {
         setSubscription({
