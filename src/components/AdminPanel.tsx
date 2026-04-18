@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Trash2, UserPlus, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PaymentTester } from '@/components/PaymentTester';
+import { DevTestPanel } from '@/components/DevTestPanel';
 
 interface PermanentAccessGrant {
   id: string;
@@ -134,6 +135,7 @@ export const AdminPanel = () => {
 
   return (
     <div className="space-y-6">
+      <DevTestPanel />
       <PaymentTester />
       
       <Card>
