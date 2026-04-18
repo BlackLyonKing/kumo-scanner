@@ -128,8 +128,10 @@ const ScanControls = ({
             disabled={isScanning}
             className={cn(
               "h-11 flex-1 min-w-[180px] text-sm font-bold rounded-lg transition-all duration-300",
-              "bg-gradient-to-r from-primary to-primary/80",
-              "hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5",
+              limitReached
+                ? "bg-gradient-to-r from-destructive to-destructive/80 hover:shadow-destructive/25"
+                : "bg-gradient-to-r from-primary to-primary/80 hover:shadow-primary/25",
+              "hover:shadow-lg hover:-translate-y-0.5",
               "disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
             )}
           >
@@ -137,6 +139,11 @@ const ScanControls = ({
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                 Scanning...
+              </>
+            ) : limitReached ? (
+              <>
+                <Lock className="mr-2 h-4 w-4" />
+                Upgrade to Continue
               </>
             ) : (
               <>
