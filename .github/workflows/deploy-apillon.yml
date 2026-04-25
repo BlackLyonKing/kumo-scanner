@@ -30,8 +30,8 @@ jobs:
 
       - name: Build application
         env:
-          # Vite needs these at build time — set as GitHub repo variables (Settings → Variables)
-          # or fall back to the values committed in .env
+          # Vite needs these at build time. Set as repo Variables (Settings → Variables)
+          # or rely on the defaults below (which match the values committed in .env).
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://rzxondizgsecijptvqtr.supabase.co' }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID || 'rzxondizgsecijptvqtr' }}
@@ -49,26 +49,23 @@ jobs:
       - name: Verify Apillon secrets
         env:
           APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
-          APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+          APILLON_API_SECRET: ${{ secrets.APILLON_API_SECRET }}
           APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
         run: |
           missing=0
           [ -z "$APILLON_API_KEY" ]      && echo "::error::APILLON_API_KEY is not set"      && missing=1
-          [ -z "$APILLON_PROJECT_UUID" ] && echo "::error::APILLON_PROJECT_UUID is not set" && missing=1
+          [ -z "$APILLON_API_SECRET" ]   && echo "::error::APILLON_API_SECRET is not set"   && missing=1
           [ -z "$APILLON_WEBSITE_UUID" ] && echo "::error::APILLON_WEBSITE_UUID is not set" && missing=1
           [ "$missing" = "1" ] && exit 1
           echo "All Apillon secrets present"
 
-      - name: Deploy to Apillon (production)
+      - name: Deploy to Apillon
         env:
           APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
-          APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+          APILLON_API_SECRET: ${{ secrets.APILLON_API_SECRET }}
           APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
         run: |
-          set -e
-          npm install -g @apillon/cli@latest
-          apillon --version
-          apillon hosting deploy ./dist \
+          npx --yes @apillon/cli hosting deploy-website ./dist \
             --uuid "$APILLON_WEBSITE_UUID" \
             --key "$APILLON_API_KEY" \
-            --secret "$APILLON_API_KEY"
+            --secret "$APILLON_API_SECRET"
