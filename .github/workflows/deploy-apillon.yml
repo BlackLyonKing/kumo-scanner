@@ -2,105 +2,73 @@ name: Deploy to Apillon Web3 Hosting
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+  workflow_dispatch:
+
+# Prevent overlapping deploys on rapid pushes
+concurrency:
+  group: apillon-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build application
-      run: npm run build
-      
-    - name: Verify GitHub Secrets
-      run: |
-        echo "Checking if secrets are set..."
-        if [ -z "${{ secrets.APILLON_API_KEY }}" ]; then
-          echo "❌ APILLON_API_KEY secret is not set"
-          exit 1
-        fi
-        if [ -z "${{ secrets.APILLON_PROJECT_UUID }}" ]; then
-          echo "❌ APILLON_PROJECT_UUID secret is not set"  
-          exit 1
-        fi
-        if [ -z "${{ secrets.APILLON_WEBSITE_UUID }}" ]; then
-          echo "❌ APILLON_WEBSITE_UUID secret is not set"
-          exit 1
-        fi
-        echo "✅ All required secrets are configured"
-        
-    - name: Verify Build Output
-      run: |
-        echo "Checking build output..."
-        if [ ! -d "./dist" ]; then
-          echo "❌ dist folder not found after build"
-          exit 1
-        fi
-        echo "✅ Build output verified"
-        ls -la ./dist/
+    timeout-minutes: 20
 
-    - name: Deploy to Apillon Web3 Hosting
-      env:
-        APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
-        APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
-        APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
-      run: |
-        set -e  # Exit on any error
-        
-        # Install Apillon CLI with specific version
-        echo "Installing Apillon CLI..."
-        npm install -g @apillon/cli@latest
-        
-        # Verify CLI installation
-        apillon --version
-        
-        # Configure Apillon CLI with debugging
-        echo "Configuring Apillon CLI..."
-        apillon config set --key "$APILLON_API_KEY"
-        
-        # Verify configuration
-        echo "Verifying Apillon configuration..."
-        apillon config show
-        
-        # Deploy to staging first
-        echo "Deploying to staging environment..."
-        apillon hosting deploy \
-          --project-uuid "$APILLON_PROJECT_UUID" \
-          --website-uuid "$APILLON_WEBSITE_UUID" \
-          --path "./dist" \
-          --environment 1 \
-          --verbose
-        
-        # Deploy to production (only on main/master branch)  
-        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-          echo "Deploying to production environment..."
-          apillon hosting deploy \
-            --project-uuid "$APILLON_PROJECT_UUID" \
-            --website-uuid "$APILLON_WEBSITE_UUID" \
-            --path "./dist" \
-            --environment 2 \
-            --verbose
-        fi
-        
-    - name: Notify deployment status
-      if: always()
-      run: |
-        if [[ "${{ job.status }}" == "success" ]]; then
-          echo "✅ Deployment successful! Your decentralized site is live on IPFS."
-        else
-          echo "❌ Deployment failed. Check the logs above for details."
-        fi
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build application
+        env:
+          # Vite needs these at build time — set as GitHub repo variables (Settings → Variables)
+          # or fall back to the values committed in .env
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://rzxondizgsecijptvqtr.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID || 'rzxondizgsecijptvqtr' }}
+          VITE_WALLETCONNECT_PROJECT_ID: ${{ vars.VITE_WALLETCONNECT_PROJECT_ID }}
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -f "./dist/index.html" ]; then
+            echo "::error::dist/index.html missing — build produced no output"
+            exit 1
+          fi
+          echo "Build size: $(du -sh dist/ | cut -f1)"
+
+      - name: Verify Apillon secrets
+        env:
+          APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+          APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+          APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+        run: |
+          missing=0
+          [ -z "$APILLON_API_KEY" ]      && echo "::error::APILLON_API_KEY is not set"      && missing=1
+          [ -z "$APILLON_PROJECT_UUID" ] && echo "::error::APILLON_PROJECT_UUID is not set" && missing=1
+          [ -z "$APILLON_WEBSITE_UUID" ] && echo "::error::APILLON_WEBSITE_UUID is not set" && missing=1
+          [ "$missing" = "1" ] && exit 1
+          echo "All Apillon secrets present"
+
+      - name: Deploy to Apillon (production)
+        env:
+          APILLON_API_KEY: ${{ secrets.APILLON_API_KEY }}
+          APILLON_PROJECT_UUID: ${{ secrets.APILLON_PROJECT_UUID }}
+          APILLON_WEBSITE_UUID: ${{ secrets.APILLON_WEBSITE_UUID }}
+        run: |
+          set -e
+          npm install -g @apillon/cli@latest
+          apillon --version
+          apillon hosting deploy ./dist \
+            --uuid "$APILLON_WEBSITE_UUID" \
+            --key "$APILLON_API_KEY" \
+            --secret "$APILLON_API_KEY"
